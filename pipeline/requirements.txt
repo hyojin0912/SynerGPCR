@@ -1,0 +1,33 @@
+# SynerGPCR data pipeline — environment actually used to produce the released tables.
+# Verified against the runtime environment on the analysis server.
+#
+# TWO ENVIRONMENTS WERE USED. Recorded here because they differ:
+#   Tier 1 (all .py analysis stages)  conda env "DAGN",   python == 3.9.23
+#   Tier 2 (02_llm_annotation/*.ipynb) conda env "gemini", python == 3.10.19
+#     (per notebook kernelspec; moa_drugbank.ipynb records python 3.9.0)
+# The pins below are read from the Tier-1 environment, which is the one that
+# matters for numeric reproducibility. The Tier-2 stage is non-deterministic
+# regardless of interpreter version, so the split does not affect any released number.
+#
+# Install:
+#   conda create -n synergpcr python=3.9.23
+#   conda activate synergpcr
+#   conda install -c conda-forge rdkit=2025.03.5
+#   pip install -r requirements.txt
+
+# --- core: Tier 1 stages (chain assembly, Bliss SI, Wilson CI, enrichment) ---
+pandas==2.2.2
+numpy==1.26.4                 # pin is REQUIRED for bit-identical Monte Carlo nulls
+statsmodels==0.14.5           # proportion_confint(..., method="wilson")
+scipy==1.13.1                 # Fisher exact test (MoA concordance)
+scikit-learn==1.6.1           # balanced_accuracy_score (GPCRact clinical BACC)
+
+# --- Tier 2 stages: LLM annotation (02_llm_annotation/) ---
+google-generativeai==0.8.6    # deprecated upstream; pinned to what was used
+tqdm==4.67.1
+typing_extensions             # TypedDict response schemas (stdlib-backport, unpinned)
+
+# --- Tier 3 helper: cheminformatics (candidate shortlisting, SMILES/ECFP4) ---
+# conda-forge only; not installable via pip at this version.
+# rdkit==2025.03.5
+

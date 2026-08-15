@@ -1,0 +1,1198 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — Browse{% endblock %}
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header ─────────────────────────────────────────────────────── -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0 fw-700" style="font-size:1.5rem;">Browse Database</h2>
+  <span class="text-muted" id="browse-header-stats" style="font-size:0.85rem;">Loading…</span>
+</div>
+
+<!-- ── Target Detail Panel (hidden by default) ─────────────────────────── -->
+<div id="target-detail" style="display:none;" class="mb-4">
+
+  <!-- Card A — Target header -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-3 px-4">
+      <div class="row align-items-center g-2">
+        <div class="col">
+          <h3 class="mb-0 fw-700" id="td-gene" style="font-size:1.4rem;">—</h3>
+          <div class="text-muted" id="td-protein" style="font-size:0.9rem;"></div>
+        </div>
+        <div class="col-auto d-flex gap-2 flex-wrap">
+          <span class="badge sg-class-badge" id="td-class"></span>
+          <span class="badge" style="background:#EDE9FE;color:#5B21B6;font-size:0.72rem;font-weight:700;" id="td-family"></span>
+        </div>
+        <div class="col-auto d-flex gap-4 text-center flex-wrap">
+          <div>
+            <div class="fw-700" style="font-size:1.25rem;" id="td-n-cpds">—</div>
+            <div class="text-muted" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.05em;">Compounds</div>
+          </div>
+          <div>
+            <div class="fw-700 text-success" style="font-size:1.25rem;" id="td-n-appr">—</div>
+            <div class="text-muted" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.05em;">Approved</div>
+          </div>
+        </div>
+        <div class="col-auto">
+          <a id="td-gpcrdb-link" href="#" target="_blank" rel="noopener"
+             class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;">GPCRdb ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card B — Enrichment info -->
+  <div id="td-enrichment-card" class="card border-0 shadow-sm mb-3" style="display:none;">
+    <div class="card-body py-3 px-4">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div>
+          <span class="text-muted" style="font-size:0.8rem;">Co-active conditional approval rate:</span>
+          <span class="fw-700" id="td-enrich-rate">—</span>
+          <span class="text-muted" style="font-size:0.8rem;">(baseline: <span id="td-enrich-baseline">—</span>)</span>
+        </div>
+        <span id="td-enrich-badge" class="badge"></span>
+        <span class="text-muted" style="font-size:0.78rem;" id="td-enrich-n"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card C — Compound table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header sg-card-header d-flex justify-content-between align-items-center">
+      <span>Ligand Profile</span>
+      <span class="text-muted" id="td-cpd-count-label" style="font-size:0.8rem;">top 50 · approved first</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>Compound</th><th>Clinical Status</th>
+            <th>L1</th><th>L2</th>
+            <th>L3 <span class="text-warning" title="β-arrestin alone is not a reliable MoA classifier">⚠</span></th>
+            <th>L4 ★</th><th>Chain Pattern</th><th class="text-end">Bliss SI</th>
+          </tr>
+        </thead>
+        <tbody id="td-compound-tbody">
+          <tr><td colspan="8" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="td-ligand-pagination"
+         class="d-flex align-items-center justify-content-between
+                px-3 py-2 border-top" style="display:none!important;">
+      <button id="td-lp-prev" class="btn btn-sm btn-outline-secondary"
+              disabled>← Prev</button>
+      <span id="td-lp-label" class="text-muted" style="font-size:0.82rem;"></span>
+      <button id="td-lp-next" class="btn btn-sm btn-outline-secondary">Next →</button>
+    </div>
+    <div class="card-footer text-muted" style="font-size:0.72rem;">
+      ⚠ L3 (β-arrestin) is unsuitable as a standalone MoA classifier (biased agonism artefacts).
+    </div>
+  </div>
+</div>
+
+<!-- ── Related GPCR Targets (shown only when ?target= param active) ── -->
+<div id="related-targets-section" style="display:none;" class="mb-4">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header sg-card-header">
+      Related GPCR Targets
+      <span class="text-muted fw-400 ms-2" id="related-targets-count"
+            style="font-size:0.8rem;"></span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>UniProt AC</th>
+            <th>Gene</th>
+            <th>Protein Name</th>
+            <th>Class</th>
+            <th>Family</th>
+            <th>Organism</th>
+            <th class="text-end">Compounds</th>
+            <th class="text-end">Approved</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="related-targets-tbody">
+          <tr><td colspan="9" class="text-center py-3 text-muted">
+            <div class="spinner-border spinner-border-sm me-2"
+                 role="status"></div>Loading…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── 4-Tab Navigation ────────────────────────────────────────────────── -->
+<ul class="nav nav-tabs mb-0" id="browseTabs" role="tablist">
+  <li class="nav-item">
+    <button class="nav-link active" id="tab-targets-btn"
+            data-bs-toggle="tab" data-bs-target="#tab-targets"
+            type="button" role="tab">GPCR Targets</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" id="tab-approved-btn"
+            data-bs-toggle="tab" data-bs-target="#tab-approved"
+            type="button" role="tab">Approved Drugs</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" id="tab-candidates-btn"
+            data-bs-toggle="tab" data-bs-target="#tab-candidates"
+            type="button" role="tab">AI Candidates</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" id="tab-disease-btn"
+            data-bs-toggle="tab" data-bs-target="#tab-disease"
+            type="button" role="tab">Disease Explorer</button>
+  </li>
+</ul>
+
+<div class="tab-content border border-top-0 rounded-bottom bg-white shadow-sm" style="padding:1rem;">
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB 1: GPCR TARGETS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane fade show active" id="tab-targets" role="tabpanel">
+
+    <div class="row g-2 mb-3">
+      <div class="col-md-3">
+        <select id="filter-class" class="form-select form-select-sm">
+          <option value="">All Classes</option>
+          <option value="A">Class A (Rhodopsin)</option>
+          <option value="B1">Class B1 (Secretin)</option>
+          <option value="B2">Class B2 (Adhesion)</option>
+          <option value="C">Class C (Glutamate)</option>
+          <option value="F">Class F (Frizzled)</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select id="filter-organism" class="form-select form-select-sm">
+          <option value="">All Organisms</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input id="filter-gene" type="search" class="form-control form-control-sm"
+               placeholder="Filter by gene or protein name…">
+      </div>
+      <div class="col-auto ms-auto">
+        <span class="text-muted" id="target-count" style="font-size:0.82rem;line-height:2;">—</span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>UniProt AC</th><th>Gene</th><th>Protein Name</th><th>Class</th><th>Family</th>
+            <th>Organism</th>
+            <th class="text-end">Compounds</th><th class="text-end">Approved</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="target-tbody">
+          <tr><td colspan="9" class="text-center py-5 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading targets…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB 2: APPROVED DRUGS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane fade" id="tab-approved" role="tabpanel">
+
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <span class="text-muted" id="approved-note" style="font-size:0.85rem;">
+        Loading approved drug counts…
+      </span>
+      <span id="approved-count-label" class="text-muted" style="font-size:0.82rem;">—</span>
+    </div>
+    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="font-size:0.84rem;">
+      <span>
+        <strong>146</strong> of these approved drugs have AI-predicted cross-family GPCR repurposing hypotheses
+        — novel target engagements beyond their known indications.
+        <span class="sg-ai-tag sg-ai-tag--warning">[AI-predicted, not experimentally validated]</span>
+      </span>
+      <a href="/ai-prediction#repurposing" class="btn btn-sm btn-outline-primary ms-2" style="white-space:nowrap;">
+        View repurposing candidates →
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>Drug Name</th><th>InChIKey</th>
+            <th>Best Chain Pattern</th><th class="text-end">GPCR Targets</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="approved-tbody">
+          <tr><td colspan="5" class="text-center py-5 text-muted">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mt-3"
+         id="approved-pagination" style="display:none;">
+      <button class="btn btn-sm btn-outline-secondary" id="approved-prev" disabled>← Previous</button>
+      <span class="text-muted" id="approved-page-label" style="font-size:0.82rem;"></span>
+      <button class="btn btn-sm btn-outline-secondary" id="approved-next">Next →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB 3: AI CANDIDATES
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane fade" id="tab-candidates" role="tabpanel">
+
+    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.85rem;">
+      Compounds with experimentally confirmed receptor binding (L1) and
+      reporter-gene activity (L4), whose intermediate G-Protein Coupling (L2)
+      or β-Arrestin Recruitment (L3) layer was absent and filled by GPCRact
+      at high confidence.
+      <span class="sg-ai-tag sg-ai-tag--warning">[AI-predicted, not experimentally validated]</span>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="btn-group btn-group-sm" role="group" id="candidate-filter-group">
+        <button type="button" class="btn btn-outline-primary active" data-layer="" data-approved="">All</button>
+        <button type="button" class="btn btn-outline-primary" data-layer="L2" data-approved="">L2-filled</button>
+        <button type="button" class="btn btn-outline-primary" data-layer="L2+L3" data-approved="">L2+L3-filled</button>
+        <button type="button" class="btn btn-outline-primary" data-layer="" data-approved="true">Approved</button>
+      </div>
+      <span class="text-muted" id="candidates-count-label" style="font-size:0.82rem;">—</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>Compound</th><th>Clinical Status</th>
+            <th>AI-filled Layer(s)</th><th>Confidence</th>
+            <th>Chain Pattern</th><th>Approved?</th>
+          </tr>
+        </thead>
+        <tbody id="candidates-tbody">
+          <tr><td colspan="6" class="text-center py-5 text-muted">
+            Select a filter or click the tab to load candidates.
+          </td></tr>
+        </tbody>
+      </table>
+    <div class="d-flex align-items-center justify-content-between mt-3"
+         id="cand-pagination" style="display:none;">
+      <button class="btn btn-sm btn-outline-secondary" id="cand-prev" disabled>← Previous</button>
+      <span class="text-muted" id="cand-page-label" style="font-size:0.82rem;"></span>
+      <button class="btn btn-sm btn-outline-secondary" id="cand-next">Next →</button>
+    </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAB 4: DISEASE EXPLORER
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane fade" id="tab-disease" role="tabpanel">
+
+    <div class="row g-3">
+      <!-- Left: disease category cards -->
+      <div class="col-lg-4">
+        <h6 class="fw-600 mb-2" style="font-size:0.9rem;">Disease Categories</h6>
+        <div id="disease-cat-list">
+          <div class="text-center text-muted py-4">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading…
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: dynamic panel -->
+      <div class="col-lg-8">
+        <div id="disease-panel">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+              Select a disease category to view target enrichment analysis.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-content -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+
+  /* ── URL params ─────────────────────────────────────────────────────── */
+  var params       = new URLSearchParams(window.location.search);
+  var targetParam  = params.get('target');
+  var tabParam     = params.get('tab');
+  var diseaseParam = params.get('disease');
+
+  /* ── Disease colour map ─────────────────────────────────────────────── */
+  var DISEASE_META = {
+    'CNS / Psychiatric':      { color: '#7C3AED', bg: '#F5F3FF', initial: 'CNS' },
+    'Cardiovascular':         { color: '#DC2626', bg: '#FEF2F2', initial: 'CV'  },
+    'Gastrointestinal':       { color: '#059669', bg: '#ECFDF5', initial: 'GI'  },
+    'Infectious Disease':     { color: '#0F766E', bg: '#F0FDFA', initial: 'INF' },
+    'Inflammatory / Immune':  { color: '#D97706', bg: '#FFFBEB', initial: 'IMM' },
+    'Metabolic / Endocrine':  { color: '#EA580C', bg: '#FFF7ED', initial: 'MET' },
+    'Oncology / Cancer':      { color: '#9F1239', bg: '#FFF1F2', initial: 'ONC' },
+    'Other / Unclassified':   { color: '#64748B', bg: '#F8FAFC', initial: 'OTH' },
+    'Pain / Musculoskeletal': { color: '#92400E', bg: '#FFFBEB', initial: 'PAI' },
+    'Renal / Urological':     { color: '#0369A1', bg: '#EFF6FF', initial: 'REN' },
+    'Reproductive / Hormonal':{ color: '#BE185D', bg: '#FDF2F8', initial: 'REP' },
+    'Respiratory':            { color: '#0284C7', bg: '#F0F9FF', initial: 'RES' },
+  };
+
+  /* ── Ligand Profile pagination ───────────────────────────────────────── */
+  var lpAllData   = [];
+  var lpPage      = 0;
+  var LP_PER_PAGE = 50;
+
+  /* ── Lazy-load flags ────────────────────────────────────────────────── */
+  var approvedOffset = 0, approvedTotal = 0, approvedLoaded = false;
+  var candidatesLoaded = false;
+  var diseaseCatsLoaded = false;
+
+  /* ── Utility ────────────────────────────────────────────────────────── */
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function statusBadge(c) {
+    var phase = c.clinical_phase || 'Investigational';
+    if (phase === 'Approved') {
+      return '<span class="badge bg-success px-2 py-1" ' +
+             'style="font-size:0.72rem;">Approved</span>';
+    }
+    if (phase === 'Investigational') {
+      return '<span class="text-muted" ' +
+             'style="font-size:0.75rem;">Investigational</span>';
+    }
+    /* Phase 1 / Phase 2 / Phase 3 / Phase 4 */
+    var num = phase.replace(/^Phase\s*/i, '');
+    return '<span class="badge bg-warning text-dark px-2 py-1" ' +
+           'style="font-size:0.72rem;">Phase ' + esc(num) + '</span>';
+  }
+  function layerBadge(v) {
+    var s = (v || '').toLowerCase();
+    if (s === 'active')   return '<span class="badge bg-success" style="font-size:0.65rem;">A</span>';
+    if (s === 'inactive') return '<span class="badge bg-danger"  style="font-size:0.65rem;">I</span>';
+    return '<span class="text-muted">—</span>';
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     TAB 1: GPCR TARGETS
+  ═════════════════════════════════════════════════════════════════ */
+  var allTargets = [];
+
+  function loadTargets() {
+    fetch('/api/targets')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        allTargets = data.sort(function(a, b) {
+          /* Homo sapiens first */
+          var aHuman = (a.organism || '').toLowerCase() === 'homo sapiens' ? 0 : 1;
+          var bHuman = (b.organism || '').toLowerCase() === 'homo sapiens' ? 0 : 1;
+          if (aHuman !== bHuman) return aHuman - bHuman;
+          /* Then by gene_name alphabetically (empty names last) */
+          var ag = (a.gene_name || 'zzz').toLowerCase();
+          var bg = (b.gene_name || 'zzz').toLowerCase();
+          return ag < bg ? -1 : ag > bg ? 1 : 0;
+        });
+        renderTargets(allTargets);
+
+        /* Populate organism filter */
+        var organisms = {};
+        data.forEach(function(t) { if (t.organism) organisms[t.organism] = 1; });
+        var sel = document.getElementById('filter-organism');
+        Object.keys(organisms).sort().forEach(function(o) {
+          var opt = document.createElement('option');
+          opt.value = o; opt.textContent = o;
+          sel.appendChild(opt);
+        });
+
+        /* Update header stats */
+        var nTargets = data.length;
+        fetch('/api/stats')
+          .then(function(r) { return r.json(); })
+          .then(function(s) {
+            document.getElementById('browse-header-stats').textContent =
+              nTargets.toLocaleString() + ' GPCR targets · ' +
+              s.n_assay_compounds.toLocaleString() + ' compounds · ' +
+              s.n_approved_db.toLocaleString() + ' approved drugs';
+          });
+
+        /* Handle ?target= */
+        if (targetParam) {
+          var match = data.find(function(t) {
+            return t.uniprot_ac === targetParam ||
+                   t.gene_name.toLowerCase() === targetParam.toLowerCase();
+          });
+          if (match) {
+            document.getElementById('filter-gene').value = match.gene_name;
+            applyTargetFilters();
+            loadTargetDetail(match.uniprot_ac);
+          } else {
+            document.getElementById('filter-gene').value = targetParam;
+            applyTargetFilters();
+          }
+
+          /* Hide the Browse tabs entirely; show related-targets panel */
+          document.getElementById('browseTabs').style.display = 'none';
+          var tc = document.querySelector('.tab-content');
+          if (tc) tc.style.display = 'none';
+          document.getElementById('related-targets-section').style.display = 'block';
+
+          function renderRelatedTargets(geneKey, familyKey) {
+            var tbody = document.getElementById('related-targets-tbody');
+            var related = allTargets.filter(function(t) {
+              return (t.gene_name && t.gene_name.toUpperCase() === geneKey.toUpperCase()) ||
+                     (familyKey && t.gpcr_family && t.gpcr_family === familyKey);
+            });
+            related.sort(function(a, b) {
+              var aMe = a.uniprot_ac === targetParam ? 0 : 1;
+              var bMe = b.uniprot_ac === targetParam ? 0 : 1;
+              if (aMe !== bMe) return aMe - bMe;
+              var aHs = (a.organism || '').toLowerCase() === 'homo sapiens' ? 0 : 1;
+              var bHs = (b.organism || '').toLowerCase() === 'homo sapiens' ? 0 : 1;
+              return aHs - bHs;
+            });
+            document.getElementById('related-targets-count').textContent =
+              '(' + related.length + ' shown)';
+            if (related.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="9" class="text-muted text-center py-3">No related targets found.</td></tr>';
+              return;
+            }
+            tbody.innerHTML = related.map(function(t) {
+              var isSelf = t.uniprot_ac === targetParam;
+              return '<tr' + (isSelf ? ' class="table-active"' : '') + '>' +
+                '<td><code style="font-size:0.78rem;">' + esc(t.uniprot_ac) + '</code></td>' +
+                '<td class="fw-600">' + esc(t.gene_name || '—') + '</td>' +
+                '<td style="font-size:0.82rem;">' + esc(t.protein_name || '—') + '</td>' +
+                '<td>' + esc(t.gpcr_class_name || '—') + '</td>' +
+                '<td style="font-size:0.82rem;">' + esc(t.gpcr_family || '—') + '</td>' +
+                '<td style="font-size:0.82rem;">' + esc(t.organism || '—') + '</td>' +
+                '<td class="text-end">' + (t.n_compounds || 0) + '</td>' +
+                '<td class="text-end">' + (t.n_approved || 0) + '</td>' +
+                '<td><a href="/browse?target=' + encodeURIComponent(t.uniprot_ac) +
+                  '" class="btn btn-sm btn-outline-primary py-0 px-2" ' +
+                  'style="font-size:0.72rem;">' +
+                  (isSelf ? 'Current' : 'View') + '</a></td>' +
+              '</tr>';
+            }).join('');
+          }
+
+          function waitAndRender() {
+            if (allTargets.length === 0) {
+              setTimeout(waitAndRender, 150);
+              return;
+            }
+            var self = allTargets.find(function(t) { return t.uniprot_ac === targetParam; });
+            var geneKey   = self ? (self.gene_name || '') : '';
+            var familyKey = self ? (self.gpcr_family || '') : '';
+            renderRelatedTargets(geneKey, familyKey);
+          }
+          waitAndRender();
+        }
+      })
+      .catch(function() {
+        document.getElementById('target-tbody').innerHTML =
+          '<tr><td colspan="9" class="text-center text-danger py-4">Failed to load targets.</td></tr>';
+      });
+  }
+
+  function renderTargets(rows) {
+    var tbody = document.getElementById('target-tbody');
+    document.getElementById('target-count').textContent = rows.length + ' targets shown';
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">No targets match.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(t) {
+      return '<tr>' +
+        '<td><code style="font-size:0.75rem;color:#64748B;">' + esc(t.uniprot_ac) + '</code></td>' +
+        '<td><a href="/browse?target=' + encodeURIComponent(t.uniprot_ac) +
+             '" class="fw-600 text-decoration-none">' + (esc(t.gene_name) || '—') + '</a></td>' +
+        '<td class="text-muted" style="font-size:0.82rem;">' + esc(t.protein_name) + '</td>' +
+        '<td><span class="badge sg-class-badge">' + esc(t.gpcr_class_letter || '?') + '</span></td>' +
+        '<td class="text-muted" style="font-size:0.82rem;">' + esc(t.gpcr_family || '—') + '</td>' +
+        '<td class="text-muted" style="font-size:0.82rem;">' + esc(t.organism || '—') + '</td>' +
+        '<td class="text-end">' + (t.n_compounds || 0).toLocaleString() + '</td>' +
+        '<td class="text-end">' + (t.n_approved > 0
+          ? '<span class="text-success fw-600">' + t.n_approved + '</span>'
+          : '<span class="text-muted">0</span>') + '</td>' +
+        '<td class="text-end">' +
+          '<a href="/browse?target=' + encodeURIComponent(t.uniprot_ac) +
+          '" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;">View</a>' +
+          (t.uniprot_entry_name
+            ? ' <a href="https://gpcrdb.org/protein/' + t.uniprot_entry_name.toLowerCase() + '/"' +
+              ' target="_blank" rel="noopener" style="font-size:0.75rem;" class="ms-1"' +
+              (t.organism !== 'Homo sapiens' ? ' title="May not be in GPCRdb (non-human)" style="font-size:0.75rem;color:#94A3B8;"' : '') +
+              '>GPCRdb ↗</a>' : '') +
+        '</td></tr>';
+    }).join('');
+  }
+
+  document.getElementById('filter-class').addEventListener('change', applyTargetFilters);
+  document.getElementById('filter-organism').addEventListener('change', applyTargetFilters);
+  document.getElementById('filter-gene').addEventListener('input', applyTargetFilters);
+
+  function applyTargetFilters() {
+    var cls  = document.getElementById('filter-class').value;
+    var org  = document.getElementById('filter-organism').value;
+    var gene = document.getElementById('filter-gene').value.toLowerCase().trim();
+    var filtered = allTargets.filter(function(t) {
+      var clsMatch = !cls || t.gpcr_class_letter === cls ||
+                     (cls === 'Other' && !['A','B1','B2','C','F'].includes(t.gpcr_class_letter));
+      var orgMatch = !org || (t.organism || '').toLowerCase() === org.toLowerCase();
+      var geneMatch = !gene || (t.gene_name || '').toLowerCase().includes(gene) ||
+                      (t.protein_name || '').toLowerCase().includes(gene) ||
+                      (t.uniprot_ac || '').toLowerCase().includes(gene);
+      return clsMatch && orgMatch && geneMatch;
+    });
+    renderTargets(filtered);
+  }
+
+  /* ── Target Detail Panel ────────────────────────────────────────────── */
+  function loadTargetDetail(uniprot_ac) {
+    lpPage    = 0;
+    lpAllData = [];
+    document.getElementById('target-detail').style.display = 'block';
+
+    /* Card A — target info */
+    fetch('/api/target/' + encodeURIComponent(uniprot_ac))
+      .then(function(r) { return r.json(); })
+      .then(function(t) {
+        document.getElementById('td-gene').textContent    = t.gene_name;
+        document.getElementById('td-protein').textContent = t.protein_name;
+        document.getElementById('td-class').textContent   = t.gpcr_class || t.gpcr_class_letter || '?';
+        document.getElementById('td-family').textContent  = t.gpcr_family || '—';
+        document.getElementById('td-n-cpds').textContent  = (t.n_compounds || 0).toLocaleString();
+        document.getElementById('td-n-appr').textContent  = t.n_approved || 0;
+        var entryName = (t.uniprot_entry_name || '').toLowerCase();
+        if (entryName) {
+          document.getElementById('td-gpcrdb-link').href =
+            'https://gpcrdb.org/protein/' + entryName + '/';
+          document.getElementById('td-gpcrdb-link').style.display = 'inline';
+        } else {
+          document.getElementById('td-gpcrdb-link').style.display = 'none';
+        }
+      });
+
+    /* Card B — enrichment */
+    fetch('/api/target/' + encodeURIComponent(uniprot_ac) + '/enrichment')
+      .then(function(r) { return r.json(); })
+      .then(function(e) {
+        var card = document.getElementById('td-enrichment-card');
+        if (!e || !e.approval_rate_cond_exp) { card.style.display = 'none'; return; }
+        card.style.display = 'block';
+        var rate = parseFloat(e.approval_rate_cond_exp);
+        var base = parseFloat(e.baseline_pool_exp);
+        document.getElementById('td-enrich-rate').textContent =
+          (!isNaN(rate) ? (rate * 100).toFixed(2) + '%' : '—');
+        document.getElementById('td-enrich-baseline').textContent =
+          (!isNaN(base) ? (base * 100).toFixed(2) + '%' : '—');
+        var badge = document.getElementById('td-enrich-badge');
+        var status = (e.enrichment_status_exp || '').toLowerCase();
+        if (status === 'enriched') {
+          badge.className = 'badge sg-enrich-enriched'; badge.textContent = 'Clinically enriched ↑';
+        } else if (status === 'depleted' || status === 'depleted (upper-bounded)') {
+          badge.className = 'badge sg-enrich-depleted'; badge.textContent = 'Depleted ↓';
+        } else if (status === 'insufficient_data') {
+          badge.className = 'badge sg-enrich-none'; badge.textContent = 'Insufficient data';
+        } else {
+          badge.className = 'badge'; badge.textContent = '';
+        }
+        var nEl = document.getElementById('td-enrich-n');
+        if (e.on_target_approved_n != null) {
+          nEl.textContent = e.on_target_approved_n + ' approved on-target';
+        } else {
+          nEl.textContent = '';
+        }
+      });
+
+    /* Card C — compounds */
+    fetch('/api/target/' + encodeURIComponent(uniprot_ac) + '/compounds?limit=500')
+      .then(function(r) { return r.json(); })
+      .then(function(compounds) {
+        var nTotal = document.getElementById('td-n-cpds');
+        var realCount = nTotal ? parseInt(nTotal.textContent.replace(/,/g,'')) : compounds.length;
+        lpAllData = compounds;
+        lpAllData._totalReal = isNaN(realCount) ? compounds.length : realCount;
+        lpPage = 0;
+        lpRender();
+      });
+  }
+
+  function lpRender() {
+    var total      = lpAllData.length;
+    var start      = lpPage * LP_PER_PAGE;
+    var end        = Math.min(start + LP_PER_PAGE, total);
+    var page       = lpAllData.slice(start, end);
+    var totalPages = Math.ceil(total / LP_PER_PAGE) || 1;
+
+    var label   = document.getElementById('td-cpd-count-label');
+    var pgDiv   = document.getElementById('td-ligand-pagination');
+    var pgLbl   = document.getElementById('td-lp-label');
+    var prevBtn = document.getElementById('td-lp-prev');
+    var nextBtn = document.getElementById('td-lp-next');
+
+    var totalReal = lpAllData._totalReal || total;
+    if (totalReal > total) {
+      label.textContent = 'Showing top ' + total.toLocaleString() +
+                          ' of ' + totalReal.toLocaleString() +
+                          ' compounds · approved first';
+    } else {
+      label.textContent = total.toLocaleString() + ' compounds · approved first';
+    }
+
+    renderTargetCompounds(page);
+
+    if (totalPages > 1) {
+      pgDiv.style.removeProperty('display');
+      pgLbl.textContent = 'Page ' + (lpPage + 1) + ' of ' + totalPages +
+                          ' (' + (start + 1) + '–' + end +
+                          ' of ' + total.toLocaleString() + ')';
+      prevBtn.disabled = (lpPage === 0);
+      nextBtn.disabled = (lpPage >= totalPages - 1);
+    } else {
+      pgDiv.style.display = 'none';
+    }
+  }
+
+  function renderTargetCompounds(compounds) {
+    var tbody = document.getElementById('td-compound-tbody');
+    if (!compounds.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No data.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = compounds.map(function(c) {
+      var isApproved = c.is_approved === 'True';
+      var si = (c.current_bliss_SI && c.current_bliss_SI !== 'nan')
+        ? parseFloat(c.current_bliss_SI).toFixed(2) : '—';
+      return '<tr' + (isApproved ? ' class="sg-row-syn"' : '') + '>' +
+        '<td><a href="/compound/' + encodeURIComponent(c.ikey) +
+          '" class="fw-500 text-decoration-none" style="font-size:0.83rem;">' + esc(c.name) + '</a></td>' +
+        '<td>' + statusBadge(c) + '</td>' +
+        '<td>' + layerBadge(c.L1) + '</td><td>' + layerBadge(c.L2) + '</td>' +
+        '<td>' + layerBadge(c.L3) + '</td><td>' + layerBadge(c.L4) + '</td>' +
+        '<td><code style="font-size:0.72rem;">' + esc(c.chain_pattern || '—') + '</code></td>' +
+        '<td class="text-end fw-600" style="font-size:0.83rem;">' + si + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     TAB 2: APPROVED DRUGS — server-side pagination (100 per page)
+  ═════════════════════════════════════════════════════════════════ */
+  var approvedTotal   = 0;
+  var approvedPage    = 0;
+  var APPROVED_PER_PAGE = 100;
+
+  function renderApprovedPage(data, pageNum) {
+    var tbody    = document.getElementById('approved-tbody');
+    var pgDiv    = document.getElementById('approved-pagination');
+    var pgLbl    = document.getElementById('approved-page-label');
+    var prevBtn  = document.getElementById('approved-prev');
+    var nextBtn  = document.getElementById('approved-next');
+    var countLbl = document.getElementById('approved-count-label');
+    var noteEl   = document.getElementById('approved-note');
+
+    approvedTotal = data.total;
+    var total      = data.total;
+    var totalPages = Math.ceil(total / APPROVED_PER_PAGE) || 1;
+    var start      = pageNum * APPROVED_PER_PAGE + 1;
+    var end        = Math.min((pageNum + 1) * APPROVED_PER_PAGE, total);
+
+    noteEl.textContent = data.n_with_assay.toLocaleString() +
+      ' of ' + total.toLocaleString() +
+      ' approved drugs have assay records in SynerGPCR.';
+    countLbl.textContent = total.toLocaleString() + ' approved drugs';
+
+    if (!data.compounds || data.compounds.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No compounds found.</td></tr>';
+      pgDiv.style.display = 'none';
+      return;
+    }
+
+    tbody.innerHTML = data.compounds.map(function(c) {
+      var nameCell = c.in_assay_universe
+        ? '<a href="/compound/' + encodeURIComponent(c.ikey) +
+          '" class="fw-600 text-decoration-none" style="font-size:0.85rem;">' + esc(c.name) + '</a>'
+        : '<a href="/compound/' + encodeURIComponent(c.ikey) +
+          '" class="fw-500 text-decoration-none text-secondary" style="font-size:0.85rem;">' + esc(c.name) + '</a>' +
+          ' <span class="badge bg-light text-secondary ms-1" style="font-size:0.65rem;">No assay record</span>';
+      return '<tr>' +
+        '<td>' + nameCell + '</td>' +
+        '<td><code style="font-size:0.72rem;color:#64748B;">' + esc(c.ikey) + '</code></td>' +
+        '<td><code style="font-size:0.75rem;">' + esc(c.chain_pattern || '—') + '</code></td>' +
+        '<td class="text-end">' + (c.n_targets != null ? c.n_targets : '—') + '</td>' +
+        '<td class="text-end">' + (c.in_assay_universe
+          ? '<a href="/compound/' + encodeURIComponent(c.ikey) +
+            '" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;">View</a>'
+          : '') +
+        '</td></tr>';
+    }).join('');
+
+    pgDiv.style.removeProperty('display');
+    pgLbl.textContent = 'Page ' + (pageNum + 1) + ' of ' + totalPages +
+                        ' (' + start + '–' + end + ' of ' + total.toLocaleString() + ')';
+    prevBtn.disabled = (pageNum === 0);
+    nextBtn.disabled = (pageNum >= totalPages - 1);
+  }
+
+  function loadApproved(pageNum) {
+    var tbody = document.getElementById('approved-tbody');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">' +
+      '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading…</td></tr>';
+    var offset = pageNum * APPROVED_PER_PAGE;
+    fetch('/api/compounds/approved?limit=' + APPROVED_PER_PAGE + '&offset=' + offset)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        approvedLoaded = true;
+        approvedPage   = pageNum;
+        renderApprovedPage(data, pageNum);
+      })
+      .catch(function() {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-3">Failed to load.</td></tr>';
+      });
+  }
+
+  document.getElementById('approved-prev').addEventListener('click', function() {
+    if (approvedPage > 0) {
+      loadApproved(approvedPage - 1);
+      document.getElementById('approved-tbody').closest('.tab-pane').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+  document.getElementById('approved-next').addEventListener('click', function() {
+    var totalPages = Math.ceil(approvedTotal / APPROVED_PER_PAGE);
+    if (approvedPage < totalPages - 1) {
+      loadApproved(approvedPage + 1);
+      document.getElementById('approved-tbody').closest('.tab-pane').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+
+  document.getElementById('td-lp-prev').addEventListener('click', function() {
+    if (lpPage > 0) {
+      lpPage--;
+      lpRender();
+      document.getElementById('target-detail')
+              .scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  document.getElementById('td-lp-next').addEventListener('click', function() {
+    var maxPage = Math.ceil(lpAllData.length / LP_PER_PAGE) - 1;
+    if (lpPage < maxPage) {
+      lpPage++;
+      lpRender();
+      document.getElementById('target-detail')
+              .scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  /* ═══════════════════════════════════════════════════════════════════
+     TAB 3: AI CANDIDATES
+  ═════════════════════════════════════════════════════════════════ */
+  /* AI Candidates — client-side pagination (mirrors ai_prediction.html) */
+  var candAllData   = [];
+  var candPage      = 0;
+  var CAND_PER_PAGE = 100;
+
+  function candRender() {
+    var tbody   = document.getElementById('candidates-tbody');
+    var label   = document.getElementById('candidates-count-label');
+    var pgDiv   = document.getElementById('cand-pagination');
+    var pgLbl   = document.getElementById('cand-page-label');
+    var prevBtn = document.getElementById('cand-prev');
+    var nextBtn = document.getElementById('cand-next');
+
+    var total      = candAllData.length;
+    var start      = candPage * CAND_PER_PAGE;
+    var end        = Math.min(start + CAND_PER_PAGE, total);
+    var page       = candAllData.slice(start, end);
+    var totalPages = Math.ceil(total / CAND_PER_PAGE) || 1;
+    var nAppr      = candAllData.filter(function(c) { return c.is_approved === 'True'; }).length;
+
+    label.textContent = total.toLocaleString() + ' compound' + (total !== 1 ? 's' : '') +
+                        (nAppr > 0 ? ' (' + nAppr + ' approved drug' + (nAppr !== 1 ? 's' : '') + ')' : '');
+
+    if (page.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No candidates match.</td></tr>';
+      pgDiv.style.display = 'none';
+      return;
+    }
+
+    tbody.innerHTML = page.map(function(c) {
+      var isAppr = c.is_approved === 'True';
+      var conf = '';
+      if (c.L2_confidence && c.L2_confidence !== 'nan') conf = parseFloat(c.L2_confidence).toFixed(3);
+      if (c.L3_confidence && c.L3_confidence !== 'nan') {
+        var l3c = parseFloat(c.L3_confidence).toFixed(3);
+        conf = conf ? conf + ' / ' + l3c : l3c;
+      }
+      return '<tr>' +
+        '<td><a href="/compound/' + encodeURIComponent(c.InChIKey) +
+          '" class="fw-500 text-decoration-none" style="font-size:0.83rem;">' +
+          esc(c.preferred_name || c.InChIKey) + '</a></td>' +
+        '<td>' + (isAppr
+          ? '<span class="badge bg-success" style="font-size:0.65rem;">Approved</span>'
+          : '<span class="text-muted" style="font-size:0.75rem;">' +
+            esc(c.clinical_phase || 'Investigational') + '</span>') + '</td>' +
+        '<td><span class="sg-ai-tag">' + esc(c.ai_filled_layers) + '</span></td>' +
+        '<td style="font-size:0.82rem;">' + esc(conf || '\u2014') + '</td>' +
+        '<td><code style="font-size:0.72rem;">' + esc(c.chain_pattern || '\u2014') + '</code></td>' +
+        '<td>' + (isAppr
+          ? '<span class="badge bg-success" style="font-size:0.65rem;">\u2713</span>'
+          : '<span class="text-muted">\u2014</span>') + '</td>' +
+        '</tr>';
+    }).join('');
+
+    pgDiv.style.removeProperty('display');
+    pgLbl.textContent = 'Page ' + (candPage + 1) + ' of ' + totalPages +
+                        ' (' + (start + 1) + '\u2013' + end + ' of ' +
+                        total.toLocaleString() + ')';
+    prevBtn.disabled = (candPage === 0);
+    nextBtn.disabled = (candPage >= totalPages - 1);
+  }
+
+  function loadCandidates(layer, is_approved) {
+    var tbody = document.getElementById('candidates-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">' +
+      '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading\u2026</td></tr>';
+    var url = '/api/candidates?limit=1500';
+    if (layer)      url += '&layer='       + encodeURIComponent(layer);
+    if (is_approved) url += '&is_approved=' + encodeURIComponent(is_approved);
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        candidatesLoaded = true;
+        candAllData = data.candidates || [];
+        candPage    = 0;
+        candRender();
+      })
+      .catch(function() {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-3">Failed to load.</td></tr>';
+      });
+  }
+
+  document.getElementById('cand-prev').addEventListener('click', function() {
+    if (candPage > 0) {
+      candPage--;
+      candRender();
+      document.getElementById('candidates-tbody').closest('.tab-pane').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+  document.getElementById('cand-next').addEventListener('click', function() {
+    var maxPage = Math.ceil(candAllData.length / CAND_PER_PAGE) - 1;
+    if (candPage < maxPage) {
+      candPage++;
+      candRender();
+      document.getElementById('candidates-tbody').closest('.tab-pane').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+
+  /* Candidate filter buttons */
+  document.getElementById('candidate-filter-group').addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    this.querySelectorAll('button').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    loadCandidates(btn.dataset.layer || '', btn.dataset.approved || '');
+  });
+
+  /* ═══════════════════════════════════════════════════════════════════
+     TAB 4: DISEASE EXPLORER
+  ═════════════════════════════════════════════════════════════════ */
+  var diseaseChart = null;
+
+  function loadDiseaseCats() {
+    if (diseaseCatsLoaded) return;
+    diseaseCatsLoaded = true;
+
+    var container = document.getElementById('disease-cat-list');
+    var cats = Object.keys(DISEASE_META).sort();
+
+    container.innerHTML = cats.map(function(cat) {
+      var m = DISEASE_META[cat];
+      return '<div class="card border-0 shadow-sm mb-2 sg-disease-card" ' +
+        'data-cat="' + esc(cat) + '" style="cursor:pointer;border-left:4px solid ' + m.color + ' !important;">' +
+        '<div class="card-body py-2 px-3 d-flex align-items-center gap-2">' +
+          '<div style="width:32px;height:32px;border-radius:50%;background:' + m.bg + ';' +
+            'border:2px solid ' + m.color + ';display:flex;align-items:center;justify-content:center;' +
+            'font-size:0.6rem;font-weight:700;color:' + m.color + ';flex-shrink:0;">' + m.initial + '</div>' +
+          '<span class="fw-600" style="font-size:0.85rem;">' + esc(cat) + '</span>' +
+        '</div></div>';
+    }).join('');
+
+    /* Click handler */
+    container.addEventListener('click', function(e) {
+      var card = e.target.closest('.sg-disease-card');
+      if (!card) return;
+      /* Highlight active */
+      container.querySelectorAll('.sg-disease-card').forEach(function(c) {
+        c.style.outline = '';
+      });
+      card.style.outline = '2px solid #3B82F6';
+      loadDiseasePanel(card.dataset.cat);
+    });
+
+    /* If ?disease= param, redirect straight to disease detail page */
+    if (diseaseParam) {
+      window.location.replace('/disease/' + encodeURIComponent(diseaseParam));
+    }
+  }
+
+  function loadDiseasePanel(category) {
+    var panel = document.getElementById('disease-panel');
+    var meta  = DISEASE_META[category] || { color: '#64748B', bg: '#F8FAFC' };
+
+    panel.innerHTML =
+      '<div class="card border-0 shadow-sm mb-3" id="dc-stats-card">' +
+        '<div class="card-header sg-card-header d-flex justify-content-between align-items-center">' +
+          '<span>' + esc(category) + '</span>' +
+          '<span class="text-muted" style="font-size:0.75rem;" id="dc-subtitle"></span>' +
+        '</div>' +
+        '<div class="card-body py-2 px-4">' +
+          '<div class="row g-3 text-center" id="dc-stats-row">' +
+            '<div class="col-4">' +
+              '<div class="fw-700" style="font-size:1.4rem;color:' + meta.color + ';" id="dc-n-diseases">—</div>' +
+              '<div class="text-muted" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;">Diseases</div>' +
+            '</div>' +
+            '<div class="col-4">' +
+              '<div class="fw-700" style="font-size:1.4rem;color:' + meta.color + ';" id="dc-n-drugs">—</div>' +
+              '<div class="text-muted" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;">Unique Drugs</div>' +
+            '</div>' +
+            '<div class="col-4">' +
+              '<div class="fw-700" style="font-size:1.4rem;color:' + meta.color + ';" id="dc-n-targets">—</div>' +
+              '<div class="text-muted" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.05em;">GPCR Targets</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card border-0 shadow-sm mb-3">' +
+        '<div class="card-header sg-card-header">Top Diseases</div>' +
+        '<div class="table-responsive">' +
+          '<table class="table table-sm table-hover mb-0">' +
+            '<thead><tr>' +
+              '<th>Disease</th>' +
+              '<th class="text-end">Drugs</th>' +
+              '<th class="text-end">Targets</th>' +
+            '</tr></thead>' +
+            '<tbody id="dc-disease-tbody">' +
+              '<tr><td colspan="3" class="text-center text-muted py-3">' +
+                '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading…' +
+              '</td></tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="card border-0 shadow-sm">' +
+        '<div class="card-header sg-card-header">Target Enrichment</div>' +
+        '<div class="card-body">' +
+          '<p class="text-muted mb-3" style="font-size:0.82rem;">' +
+            'Targets with sufficient co-active compound data (n ≥ 5) and their ' +
+            'conditional approval rates vs the 1.40% population baseline.' +
+          '</p>' +
+          '<div class="text-center text-muted py-4" id="disease-chart-spinner">' +
+            '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading enrichment data…' +
+          '</div>' +
+          '<div class="sg-disease-chart-wrap" style="display:none;" id="disease-chart-wrap">' +
+            '<canvas id="disease-chart-canvas"></canvas>' +
+            '<div class="text-muted mt-1" style="font-size:0.78rem;">Dashed line: 1.40% population baseline.</div>' +
+          '</div>' +
+          '<div id="disease-no-data" style="display:none;" class="text-center text-muted py-4">' +
+            'No targets with sufficient data for this category.' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    /* ── Fetch 1: category summary (stats + disease list) ── */
+    fetch('/api/disease_category?category=' + encodeURIComponent(category))
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        document.getElementById('dc-n-diseases').textContent = d.n_diseases.toLocaleString();
+        document.getElementById('dc-n-drugs').textContent    = d.n_drugs.toLocaleString();
+        document.getElementById('dc-n-targets').textContent  = d.n_targets.toLocaleString();
+        document.getElementById('dc-subtitle').textContent   =
+          d.n_diseases + ' diseases \xb7 ' + d.n_drugs + ' drugs \xb7 ' + d.n_targets + ' targets';
+
+        var tbody = document.getElementById('dc-disease-tbody');
+        if (!d.diseases || d.diseases.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="text-muted text-center">No data.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = d.diseases.map(function(row) {
+          return '<tr>' +
+            '<td><a href="/disease/' + encodeURIComponent(row.disease_name) +
+              '" class="text-decoration-none fw-500" style="font-size:0.85rem;">' +
+              esc(row.disease_name) + '</a></td>' +
+            '<td class="text-end" style="font-size:0.85rem;">' + row.n_drugs + '</td>' +
+            '<td class="text-end" style="font-size:0.85rem;">' +
+              (row.n_targets > 0 ? row.n_targets : '<span class="text-muted">—</span>') +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      })
+      .catch(function() {
+        var tbody = document.getElementById('dc-disease-tbody');
+        if (tbody) tbody.innerHTML =
+          '<tr><td colspan="3" class="text-danger text-center">Failed to load.</td></tr>';
+      });
+
+    /* ── Fetch 2: enrichment chart (unchanged logic) ── */
+    fetch('/api/disease_targets?category=' + encodeURIComponent(category))
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        document.getElementById('disease-chart-spinner').style.display = 'none';
+
+        var valid = rows.filter(function(r) {
+          return parseFloat(r.n_co_active_exp) >= 5 &&
+                 parseFloat(r.n_approved_cat)  >= 2;
+        });
+
+        if (valid.length === 0) {
+          document.getElementById('disease-no-data').style.display = 'block';
+          return;
+        }
+
+        valid.sort(function(a, b) {
+          return parseFloat(b.log2_enrichment) - parseFloat(a.log2_enrichment);
+        });
+        valid = valid.slice(0, 20);
+
+        var labels = valid.map(function(r) { return r.GPCR_name || r.UniProt; });
+        var values = valid.map(function(r) { return parseFloat(r.approval_rate_cond) * 100; });
+
+        var wrap   = document.getElementById('disease-chart-wrap');
+        wrap.style.display = 'block';
+        var canvas = document.getElementById('disease-chart-canvas');
+        canvas.style.height = Math.max(250, valid.length * 28) + 'px';
+
+        if (diseaseChart) { diseaseChart.destroy(); }
+        diseaseChart = new Chart(canvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Conditional approval rate (%)',
+              data: values,
+              backgroundColor: meta.color + '99',
+              borderColor: meta.color,
+              borderWidth: 1,
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(item) {
+                    var r = valid[item.dataIndex];
+                    return [
+                      'Approval rate: ' + (parseFloat(r.approval_rate_cond)*100).toFixed(1) + '%',
+                      'Approved drugs: ' + r.n_approved_cat + ' / ' + r.n_co_active_exp,
+                      'log₂ enrichment: ' + parseFloat(r.log2_enrichment).toFixed(2),
+                    ];
+                  }
+                }
+              },
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                title: { display: true, text: 'Conditional approval rate (%)' },
+              },
+              y: { ticks: { font: { size: 11 } } },
+            }
+          },
+          plugins: [{
+            id: 'baselineLine',
+            afterDraw: function(chart) {
+              var xScale = chart.scales.x;
+              var x   = xScale.getPixelForValue(1.40);
+              var ctx = chart.ctx;
+              ctx.save();
+              ctx.beginPath();
+              ctx.setLineDash([4, 4]);
+              ctx.strokeStyle = '#EF4444';
+              ctx.lineWidth   = 1.5;
+              ctx.moveTo(x, chart.chartArea.top);
+              ctx.lineTo(x, chart.chartArea.bottom);
+              ctx.stroke();
+              // label moved to static caption below chart
+              ctx.restore();
+            }
+          }]
+        });
+      })
+      .catch(function() {
+        var spinner  = document.getElementById('disease-chart-spinner');
+        var nodata   = document.getElementById('disease-no-data');
+        if (spinner) spinner.style.display = 'none';
+        if (nodata)  { nodata.style.display = 'block'; nodata.textContent = 'Failed to load enrichment data.'; }
+      });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     TAB SWITCHING + URL-BASED INIT
+  ═════════════════════════════════════════════════════════════════ */
+
+  /* Lazy-load on tab click */
+  document.getElementById('tab-approved-btn').addEventListener('click', function() {
+    if (!approvedLoaded) { approvedLoaded = true; loadApproved(0); }
+  });
+  document.getElementById('tab-candidates-btn').addEventListener('click', function() {
+    if (!candidatesLoaded) { loadCandidates('', ''); }
+  });
+  document.getElementById('tab-disease-btn').addEventListener('click', function() {
+    loadDiseaseCats();
+  });
+
+  /* URL param tab activation */
+  function activateTab() {
+    var btnId = null;
+    if (tabParam === 'approved')   btnId = 'tab-approved-btn';
+    if (tabParam === 'candidates') btnId = 'tab-candidates-btn';
+    if (tabParam === 'disease')    btnId = 'tab-disease-btn';
+    if (tabParam === 'targets')    btnId = 'tab-targets-btn';
+
+    if (btnId) {
+      setTimeout(function() {
+        var btn = document.getElementById(btnId);
+        if (btn) {
+          bootstrap.Tab.getOrCreateInstance(btn).show();
+          btn.click(); /* trigger lazy load */
+        }
+      }, 100);
+    }
+  }
+
+  /* ── Init ────────────────────────────────────────────────────────────── */
+  loadTargets();
+  activateTab();
+
+})();
+</script>
+{% endblock %}

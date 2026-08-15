@@ -1,0 +1,56 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : Assay free-text -> structured assay metadata (ChEMBL + BindingDB)
+Notebook           : 02_llm_annotation/assay_parsing_chembl_bdb.ipynb
+Input              : ChEMBL `assay_description` / BindingDB `DESCRIPTION` (free text)
+Output tables      : Output/DB/ChEMBL/ChEMBL_llm_parsed.csv        (443,285 rows)
+                     Output/DB/BindingDB/BindingDB_llm_parsed.csv  (415,712 rows)
+                     Both retain the input text column alongside the LLM output,
+                     so this stage is fully auditable row by row.
+
+Model              : models/gemini-2.5-flash
+Temperature        : 0.1
+response_mime_type : application/json
+Schema declaration : explicit OpenAPI-style dict `assay_info_schema`
+                     (all five fields listed under "required")
+Random seed        : none (API does not accept one) -> NOT deterministic
+Concurrency        : ThreadPoolExecutor(max_workers=10) over the set of UNIQUE
+                     description strings; results are then mapped back to all rows.
+                     Identical description text therefore always receives an
+                     identical label within a run.
+
+RESPONSE SCHEMA FIELDS
+  assay_type       : STRING   "Choose exactly one: 'cAMP', 'Ca2+', 'IP1', 'GTPgS',
+                               'beta-arrestin', 'binding_only', or 'reporter_other'."
+  target_moa       : STRING   "Choose exactly one: 'Agonist', 'Antagonist',
+                               'Partial Agonist', 'Inverse Agonist', 'PAM', 'NAM',
+                               or 'Unknown'."
+  is_negation      : BOOLEAN  "True ONLY if the assay explicitly failed to show the
+                               target MoA, otherwise False."
+  disease_context  : STRING   "Target disease, clinical indication, or therapeutic
+                               area. 'N/A' if not stated."
+  cell_line        : STRING   "Specific cell line used (e.g., HEK293, CHO, HeLa).
+                               'N/A' if not stated."
+
+RETRY POLICY
+  retries = 3. On HTTP 429 / ResourceExhausted: sleep 5 s, retry.
+  On any other exception: print, sleep 2 s, retry (loop continues to `retries`).
+
+FALLBACK ON FAILURE
+  {"assay_type": "Unknown", "target_moa": "Unknown", "is_negation": false,
+   "disease_context": "N/A", "cell_line": "N/A"}
+  Also returned without an API call when the input text is NaN or empty.
+
+DOWNSTREAM USE
+  Feeds Output/DB/GPCRactDB/ChEMBL_BDB_Assay_Labeled.csv (925,727 rows), then
+  01_harmonisation/assay_moa_integration.ipynb. NOTE: the labelled file drops the
+  input description column; use the two *_llm_parsed.csv files above for audit.
+
+================================================================================
+PROMPT (verbatim; {text} is the assay description)
+================================================================================
+
+Analyze the following GPCR assay description and extract the required metadata.
+
+Assay Description: "{text}"

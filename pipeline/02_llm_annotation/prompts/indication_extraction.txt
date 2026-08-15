@@ -1,0 +1,68 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : Drug indication free-text -> disease entities + UMLS CUI
+Notebook           : 02_llm_annotation/indication_to_umls.ipynb
+Sources covered    : DrugBank, TTD, IUPHAR
+Output tables      : Output/DB/DrugBank/NAR/DrugBank_Master_Standardized.csv
+                     (and the TTD / IUPHAR equivalents), which feed
+                     Output/DB/GPCRactDB/Drug_Indication_Master_Integrated.csv
+Checkpointing      : JSON checkpoint written every 50 unique texts; the run is
+                     resumable and already-processed texts are skipped.
+
+Model              : models/gemini-2.5-flash-lite
+Temperature        : 0.0
+response_mime_type : application/json
+Schema declaration : typing_extensions.TypedDict
+                       DiseaseEntity     { disease_name: str,
+                                           umls_cui:     str,   # e.g. C0020538
+                                           icd_code:     str }  # ICD-10 or ICD-11
+                       DiseaseExtraction { indications: list[DiseaseEntity] }
+Random seed        : none -> NOT deterministic even at temperature 0.0
+Rate control       : time.sleep(6) before every call (PROMPT A)
+
+TWO PROMPTS ARE USED IN THIS STAGE
+  A. Multi-entity extraction from a long indication paragraph (DrugBank-style).
+  B. Single-CUI resolution from an already-short disease name + ICD code
+     (TTD-style). Prompt B uses a SEPARATE model handle with no response_schema
+     (plain text, temperature 0.0) and validates the answer with the regex
+     C\d{7}, returning 'Unknown' if it does not match.
+
+RETRY POLICY (both prompts)
+  retries = 7. On HTTP 429 / ResourceExhausted: sleep `wait`, then wait *= 2,
+  starting at 5 s. On any other exception: print and break.
+  Prompt A additionally strips markdown fences (```json ... ```) before
+  json.loads, and breaks immediately on JSONDecodeError.
+
+FALLBACK ON FAILURE
+  Prompt A : {"indications": []}   -> the drug contributes no indication rows
+  Prompt B : "Unknown"             -> the CUI is left unresolved
+  Both are silent-drop failures: they reduce coverage rather than inject a wrong
+  disease. Absence of an indication link is therefore not evidence of absence.
+
+================================================================================
+PROMPT A — multi-entity extraction (verbatim; {text} = indication paragraph)
+================================================================================
+
+    You are an expert clinical data curator and ontologist.
+    Extract the primary therapeutic indications (diseases or medical conditions) from the following text.
+    For each disease, provide the standard medical name, the corresponding UMLS CUI (Concept Unique Identifier), and an approximate ICD-10/11 code.
+    If a specific ID is unknown, output 'Unknown'.
+    Ignore adverse effects or mechanism descriptions; focus ONLY on the diseases the drug aims to treat.
+
+    Text: "{text}"
+
+================================================================================
+PROMPT B — single-CUI resolution (verbatim; {disease_name}, {icd_code})
+================================================================================
+
+    You are a biomedical ontology expert.
+    Given a disease name and its ICD code, return ONLY the UMLS CUI for this exact disease.
+
+    Disease name: "{disease_name}"
+    ICD code: "{icd_code}"
+
+    Rules:
+    - Return the single most specific UMLS CUI for this disease
+    - If truly unknown, return "Unknown"
+    - Do NOT return multiple CUIs

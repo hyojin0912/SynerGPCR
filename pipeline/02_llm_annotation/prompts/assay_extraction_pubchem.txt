@@ -1,0 +1,57 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : Assay free-text -> structured assay metadata (PubChem)
+Notebook           : 02_llm_annotation/assay_parsing_pubchem.ipynb
+Input              : PubChem BioAssay AID Title + Description (free text)
+Output table       : Output/DB/PubChem/NAR/aid_information_llm_parsed_v2.csv
+                     (35,216 rows; keyed by AID)
+
+Model              : models/gemini-2.5-flash
+Temperature        : 0.1
+response_mime_type : application/json
+Schema declaration : typing_extensions.TypedDict `AssayExtraction`
+Random seed        : none (API does not accept one) -> NOT deterministic
+
+RESPONSE SCHEMA FIELDS
+  assay_type       : str   enum = {cAMP, Ca2+, IP1, GTPgS, beta-arrestin,
+                                   binding_only, reporter_other}
+  target_moa       : str   enum = {Agonist, Antagonist, Partial Agonist,
+                                   Inverse Agonist, PAM, NAM, Unknown}
+  is_negation      : bool  true only if the assay explicitly failed to show the MoA
+  disease_context  : str   free text, 'N/A' if not stated
+  cell_line        : str   free text, 'N/A' if not stated
+
+RETRY POLICY
+  retries = 3. On HTTP 429 / ResourceExhausted: sleep 5 s, retry.
+  On any other exception: print and break immediately (no further retry).
+
+FALLBACK ON FAILURE (all retries exhausted, or non-rate-limit error)
+  {"assay_type": "Unknown", "target_moa": "Unknown", "is_negation": false,
+   "disease_context": "N/A", "cell_line": "N/A"}
+  NOTE: failures are recorded as "Unknown", not as missing rows. Rows carrying
+  assay_type == "Unknown" therefore mix genuine unknowns with API failures.
+
+DOWNSTREAM USE
+  assay_type maps to the assay layer in 01_harmonisation/assay_moa_integration.ipynb:
+    binding_only -> Layer 1 (Binding)
+    cAMP | Ca2+ | GTPgS | IP1 -> Layer 2 (Proximal)
+    beta-arrestin -> Layer 3 (Biased)
+    reporter_other -> Layer 4 (Reporter)
+
+================================================================================
+PROMPT (verbatim; {title} and {description} are substituted per assay)
+================================================================================
+
+    You are an expert bioinformatician and data curator.
+    Analyze the following assay Title and Description to extract specific biological and pharmacological metadata.
+
+    Extraction Rules:
+    - assay_type: Choose from 'cAMP', 'Ca2+', 'IP1', 'GTPgS', 'beta-arrestin', 'binding_only', or 'reporter_other'.
+    - target_moa: Choose from 'Agonist', 'Antagonist', 'Partial Agonist', 'Inverse Agonist', 'PAM', 'NAM', or 'Unknown'.
+    - is_negation: Set to true ONLY if the assay explicitly states it failed to show the target MoA.
+    - disease_context: The target disease, clinical indication, or therapeutic area. Return 'N/A' if not explicitly stated.
+    - cell_line: The specific cell line used for the assay (e.g., HEK293, CHO, HeLa). Return 'N/A' if not explicitly stated.
+
+    Assay Title: "{title}"
+    Assay Description: "{description}"

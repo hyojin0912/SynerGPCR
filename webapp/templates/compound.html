@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — {{ compound.preferred_name or ikey }}{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 1 — Compound Header: 2D Structure + Drug Info
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="row g-4 mb-4">
+
+  <!-- Left: Chemical Structure -->
+  <div class="col-md-4 col-lg-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header sg-card-header">Chemical Structure</div>
+      <div class="card-body d-flex align-items-center justify-content-center p-2"
+           style="min-height:240px;">
+        <img id="structure-img"
+             src="/api/structure/{{ ikey }}"
+             style="max-width:100%;height:auto;max-height:240px;object-fit:contain;"
+             alt="2D structure of {{ compound.preferred_name or ikey }}"
+             onerror="this.style.display='none';document.getElementById('structure-fallback').style.display='flex';">
+        <div id="structure-fallback"
+             style="display:none;flex-direction:column;align-items:center;text-align:center;padding:1rem;">
+          <div style="font-size:2rem;color:#CBD5E1;margin-bottom:0.5rem;">⬡</div>
+          <p class="text-muted mb-1" style="font-size:0.82rem;">Structure not available</p>
+          <code style="font-size:0.65rem;word-break:break-all;color:#94A3B8;">{{ compound.smiles or '—' }}</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Drug Name, Badge, Quick Stats -->
+  <div class="col-md-8 col-lg-9">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body py-3 px-4">
+
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+          <div>
+            <h2 class="mb-1 fw-700" style="font-size:1.65rem;line-height:1.1;">
+              {{ compound.preferred_name or "Unknown Compound" }}
+            </h2>
+            <code class="text-muted" style="font-size:0.79rem;">{{ ikey }}</code>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            {% if compound.is_approved == 'True' %}
+              <span class="badge bg-success px-3 py-2" style="font-size:0.85rem;">✓ Approved Drug</span>
+            {% elif compound.clinical_phase and compound.clinical_phase not in ('Approved', 'Investigational', '') %}
+              {% set phase_display = compound.clinical_phase | replace("Phase ", "") %}
+              <span class="badge bg-primary px-3 py-2" style="font-size:0.85rem;">Phase {{ phase_display }}</span>
+            {% else %}
+              <span class="badge bg-secondary px-3 py-2" style="font-size:0.85rem;">Investigational</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quick stats (populated by JS) -->
+        <div id="compound-quick-stats" class="row g-2">
+          <div class="col-12 text-muted" style="font-size:0.82rem;">
+            <div class="spinner-border spinner-border-sm me-1" role="status"></div>
+            Loading chain data…
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 2 — Assay Chain Pipeline
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header sg-card-header d-flex justify-content-between align-items-center">
+    <span>Assay Chain Pipeline</span>
+    <small class="text-muted fw-400">Assay coverage across all linked GPCR targets</small>
+  </div>
+  <div class="card-body">
+
+    <!-- Legend -->
+    <div class="d-flex gap-4 mb-4 flex-wrap justify-content-center" style="font-size:0.78rem;color:#64748B;">
+      <span class="sg-legend-item">
+        <span class="node-active" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;"></span>&nbsp;Active (experimental)
+      </span>
+      <span class="sg-legend-item">
+        <span class="node-inactive" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;"></span>&nbsp;Inactive
+      </span>
+      <span class="sg-legend-item">
+        <span class="node-ai" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;animation:pulse 1.5s infinite;"></span>&nbsp;AI-predicted (high-confidence)
+      </span>
+      <span class="sg-legend-item">
+        <span class="node-nodata" style="width:28px;height:28px;font-size:0.6rem;flex-shrink:0;"></span>&nbsp;No data
+      </span>
+    </div>
+
+    <!-- Pipeline nodes (populated by JS) -->
+    <div id="chain-nodes" class="d-flex align-items-center justify-content-center gap-1 py-2">
+      <div class="text-center text-muted w-100 py-3">
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading assay chain…
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 3 — GPCR Target Profile
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header sg-card-header d-flex justify-content-between">
+    <span>GPCR Target Profile</span>
+    <span class="text-muted" id="target-count-label" style="font-size:0.82rem;">—</span>
+  </div>
+  <div class="px-3 pt-2 pb-1" style="font-size:0.78rem;color:#64748B;">
+    Each row shows experimental assay results for this compound at that GPCR
+    target. Where an L2 or L3 record is absent, a high-confidence GPCRact prediction is
+    shown as AI ↑; "—" indicates neither a record nor a prediction.
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0 sg-browse-table">
+      <thead>
+        <tr>
+          <th>Gene</th>
+          <th>L1 Receptor Binding</th>
+          <th>L2 G-Protein Coupling</th>
+          <th>L3 β-Arrestin Recruitment <span class="text-warning"
+              title="β-Arrestin alone is not a reliable MoA classifier due to biased agonism">⚠</span></th>
+          <th>L4 Reporter Gene Activity</th>
+          <th>Chain Pattern</th>
+        </tr>
+      </thead>
+      <tbody id="target-profile-tbody">
+        <tr><td colspan="6" class="text-center text-muted py-4">
+          <div class="spinner-border spinner-border-sm me-1" role="status"></div>Loading…
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer text-muted" style="font-size:0.72rem;">
+    ⚠ L3 (β-arrestin) is unsuitable as a standalone MoA classifier due to biased agonism artefacts.
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 4 — Clinical Context: Synergy Scoreboard + Compound Info
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="row g-4 mb-4">
+
+  <!-- Left: Synergy Scoreboard -->
+  <div class="col-lg-5">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-header sg-card-header">Synergy Scoreboard</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0 sg-synergy-table">
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th class="text-end">Bliss SI</th>
+              <th class="text-end">Approval Rate</th>
+            </tr>
+          </thead>
+          <tbody id="synergy-tbody">
+            <tr><td colspan="3" class="text-center text-muted py-3">
+              <div class="spinner-border spinner-border-sm me-1" role="status"></div>Loading…
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer text-muted" id="synergy-note" style="font-size:0.72rem;">
+        Bliss SI &gt; 1 indicates synergistic co-occurrence with clinical approval.
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Compound Information + Disease Indications -->
+  <div class="col-lg-7">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-header sg-card-header">Compound Information</div>
+      <div class="card-body">
+        <dl class="row mb-0" style="font-size:0.85rem;">
+          <dt class="col-sm-4 text-muted">InChIKey</dt>
+          <dd class="col-sm-8"><code style="font-size:0.78rem;word-break:break-all;">{{ ikey }}</code></dd>
+
+          <dt class="col-sm-4 text-muted">SMILES</dt>
+          <dd class="col-sm-8">
+            <code style="font-size:0.7rem;word-break:break-all;color:#475569;">{{ compound.smiles or '—' }}</code>
+          </dd>
+
+          <dt class="col-sm-4 text-muted">Approval Status</dt>
+          <dd class="col-sm-8">
+            {% if compound.is_approved == 'True' %}
+              <span class="text-success fw-600">✓ Approved</span>
+            {% else %}
+              <span class="text-muted">Not approved</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-4 text-muted">Clinical Phase</dt>
+          <dd class="col-sm-8">
+            {{ compound.clinical_phase if compound.clinical_phase and compound.clinical_phase != '' else '—' }}
+          </dd>
+
+          <dt class="col-sm-4 text-muted">GPCR Targets</dt>
+          <dd class="col-sm-8" id="info-n-targets">—</dd>
+
+          <dt class="col-sm-4 text-muted">Best Chain</dt>
+          <dd class="col-sm-8" id="info-best-chain">—</dd>
+        </dl>
+
+        <!-- Repurposing predictions (populated by JS) -->
+        <div id="repurposing-section" style="display:none;" class="mt-3 pt-3 border-top">
+          <h6 class="fw-600 mb-2" style="font-size:0.88rem;">Cross-family Repurposing Predictions</h6>
+          <div class="table-responsive">
+            <table class="table table-sm mb-0 sg-browse-table">
+              <thead>
+                <tr>
+                  <th>Layer</th>
+                  <th>AI-Predicted Target</th>
+                  <th>GPCR Family</th>
+                  <th>Predicted MoA</th>
+                  <th class="text-end">Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="repurposing-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SECTION 5 — AI-Predicted Activity
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="ai-prediction-panel" class="card mb-4 border-0 shadow-sm" style="display:none;">
+  <div class="card-header sg-card-header d-flex justify-content-between align-items-center">
+    <span>AI-Predicted Activity</span>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0 sg-browse-table">
+        <thead>
+          <tr>
+            <th>GPCR Target</th>
+            <th>Layer</th>
+            <th>Predicted MoA</th>
+            <th class="text-end">Confidence</th>
+          </tr>
+        </thead>
+        <tbody id="ai-pred-tbody">
+          <tr><td colspan="4" class="text-center text-muted py-3">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+
+  var IKEY = "{{ ikey }}";
+
+  /* ── Fetch synergy_stats once for Full_chain reference row + synMap ── */
+  var fullChainRow = null;
+  var synMap = {};
+  fetch('/api/synergy_stats')
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      rows.forEach(function(r) { synMap[r.chain_pattern] = r; });
+      var fc = synMap['Full_chain'];
+      if (fc) fullChainRow = fc;
+    })
+    .catch(function() {});
+
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Fetch compound data ──────────────────────────────────────────────── */
+  fetch('/api/compound/' + encodeURIComponent(IKEY))
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      renderQuickStats(data);
+      renderChainNodes(data);
+      renderSynergyScoreboard(data.synergy || {}, data);
+      renderAIPredictions(data.ai_predictions || []);
+      renderTargetTable(data.chains || [], data.ai_predictions || []);
+
+      var el1 = document.getElementById('info-n-targets');
+      var el2 = document.getElementById('info-best-chain');
+      if (el1) el1.textContent = (data.chains ? data.chains.length : 0) + ' targets';
+      if (el2 && data.synergy) el2.textContent = data.synergy.current_pattern || '—';
+    })
+    .catch(function(e) {
+      console.error('Compound API error:', e);
+      ['chain-nodes','synergy-tbody','target-profile-tbody','compound-quick-stats'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = '<td colspan="8" class="text-center text-danger py-3">Failed to load data.</td>';
+      });
+    });
+
+  /* ── Fetch repurposing data ──────────────────────────────────────────── */
+  fetch('/api/compound/' + encodeURIComponent(IKEY) + '/repurposing')
+    .then(function(r) { return r.json(); })
+    .then(function(rows) { renderRepurposing(rows); })
+    .catch(function() {});
+
+  /* ── Quick Stats ─────────────────────────────────────────────────────── */
+  function renderQuickStats(data) {
+    var qs = document.getElementById('compound-quick-stats');
+    if (!qs) return;
+    var n    = data.chains ? data.chains.length : 0;
+    var pat  = data.synergy && data.synergy.current_pattern ? data.synergy.current_pattern : '—';
+    var si   = data.synergy && data.synergy.current_si
+                 ? parseFloat(data.synergy.current_si).toFixed(2) : '—';
+    var rate = data.synergy && data.synergy.current_approval_rate
+                 ? parseFloat(data.synergy.current_approval_rate).toFixed(2) + '%' : '—';
+    qs.innerHTML =
+      /* Stat 1: GPCR Targets */
+      '<div class="col-auto">' +
+        '<div class="fw-700 text-primary" style="font-size:1.1rem;">' + n + '</div>' +
+        '<div class="text-muted" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.05em;">GPCR Targets</div>' +
+      '</div>' +
+      /* Stat 2: Best Chain Pattern + caption */
+      '<div class="col-auto">' +
+        '<div class="fw-700" style="font-size:1.1rem;"><code>' + esc(pat) + '</code></div>' +
+        '<div class="text-muted" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.05em;">Best Chain Pattern</div>' +
+        '<div style="font-size:0.65rem;color:#94A3B8;margin-top:2px;line-height:1.5;">' +
+          'Compound-level union across all GPCR pairs<br>' +
+          'Union of active layers across ' + n + ' target' + (n === 1 ? '' : 's') +
+        '</div>' +
+      '</div>' +
+      /* Stat 3: Approval Rate */
+      '<div class="col-auto">' +
+        '<div class="fw-700" style="font-size:1.1rem;">' + rate + '</div>' +
+        '<div class="text-muted" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.05em;">Approval Rate</div>' +
+        '<div style="font-size:0.65rem;color:#94A3B8;margin-top:2px;">Compounds with this pattern</div>' +
+      '</div>' +
+      /* Stat 4: Bliss Synergy Index */
+      '<div class="col-auto">' +
+        '<div class="fw-700" style="font-size:1.1rem;">SI = ' + si + '</div>' +
+        '<div class="text-muted" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.05em;">Bliss Synergy Index</div>' +
+      '</div>';
+  }
+
+  /* ── Pipeline Nodes ──────────────────────────────────────────────────── */
+  /* Build per-layer AI lookup: layer → Set of uniprot_ac */
+  function buildAILayerMap(aiPreds) {
+    var map = { L2: {}, L3: {} };
+    (aiPreds || []).forEach(function(p) {
+      if (p.is_high_confidence === 'True' && p.predicted_moa !== 'non-binder') {
+        var lyr = (p.layer || 'L2').toUpperCase();
+        if (map[lyr]) map[lyr][p.uniprot_ac] = true;
+      }
+    });
+    return map;
+  }
+
+  function nodeClass(states, aiLayerMap, layerKey) {
+    var vals = (states || []).filter(function(s) {
+      return s && s !== 'nan' && s !== 'null' && s !== 'None';
+    });
+    if (vals.indexOf('Active') !== -1) return 'node-active';
+    if (vals.length > 0 && vals.every(function(v) { return v === 'Inactive'; })) return 'node-inactive';
+    /* AI-predicted: check if ANY target has a high-confidence prediction for this layer */
+    if ((layerKey === 'L2' || layerKey === 'L3') && aiLayerMap[layerKey]) {
+      if (Object.keys(aiLayerMap[layerKey]).length > 0) return 'node-ai';
+    }
+    return 'node-nodata';
+  }
+
+  function renderChainNodes(data) {
+    var container = document.getElementById('chain-nodes');
+    if (!container) return;
+    var chains  = data.chains || [];
+    var aiLayerMap = buildAILayerMap(data.ai_predictions || []);
+
+    var LAYERS = [
+      { key: 'L1', label: 'Receptor Binding',       sub: 'Radioligand' },
+      { key: 'L2', label: 'G-Protein Coupling',     sub: 'cAMP / Ca²⁺ / IP1' },
+      { key: 'L3', label: 'β-Arrestin Recruitment', sub: 'β-arrestin assay',
+        title: 'β-Arrestin alone is not a reliable MoA classifier due to biased agonism' },
+      { key: 'L4', label: 'Reporter Gene Activity', sub: 'Transcription factor' },
+    ];
+
+    var parts = [];
+    var arrow = '<div style="font-size:1.5rem;color:#94A3B8;align-self:flex-start;margin-top:17px;padding:0 4px;">→</div>';
+
+    LAYERS.forEach(function(layer, i) {
+      var states = chains.map(function(c) { return c[layer.key]; });
+      var cls = nodeClass(states, aiLayerMap, layer.key);
+      var isAI = cls === 'node-ai';
+      var titleAttr = layer.title ? ' title="' + esc(layer.title) + '"' : '';
+      var node =
+        '<div class="text-center" style="min-width:80px;"' + titleAttr + '>' +
+          '<div class="' + cls + '" style="margin:0 auto 8px;' +
+            (isAI ? 'animation:pulse 1.5s infinite;' : '') + '">' + layer.key + '</div>' +
+          '<div class="fw-600" style="font-size:0.8rem;color:#1E293B;">' + esc(layer.label) + '</div>' +
+          '<div style="font-size:0.68rem;color:#94A3B8;">' + esc(layer.sub) + '</div>' +
+        '</div>';
+      if (i > 0) parts.push(arrow);
+      parts.push(node);
+    });
+
+    container.innerHTML = parts.join('');
+  }
+
+  /* ── AI Predictions Panel ────────────────────────────────────────────── */
+  function layerLabel(lyr) {
+    if ((lyr || '').toUpperCase() === 'L3')
+      return 'L3 \u2014 \u03b2-Arrestin Recruitment';
+    return 'L2 \u2014 G-Protein Coupling';
+  }
+
+  function renderAIPredictions(predictions) {
+    var panel = document.getElementById('ai-prediction-panel');
+    var tbody = document.getElementById('ai-pred-tbody');
+    if (!panel || !tbody) return;
+
+    /* Deduplicate: keep highest confidence per (uniprot_ac, layer) */
+    var seen = {};
+    var deduped = [];
+    predictions.forEach(function(p) {
+      if (p.is_high_confidence !== 'True' || p.predicted_moa === 'non-binder') return;
+      var key = (p.uniprot_ac || '') + '|' + (p.layer || 'L2');
+      var conf = parseFloat(p.confidence_raw || 0);
+      if (!seen[key] || conf > seen[key]) {
+        seen[key] = conf;
+        /* Replace or push */
+        var idx = deduped.findIndex(function(x) {
+          return x.uniprot_ac === p.uniprot_ac && (x.layer || 'L2') === (p.layer || 'L2');
+        });
+        if (idx >= 0) deduped[idx] = p; else deduped.push(p);
+      }
+    });
+
+    if (deduped.length === 0) return;
+
+    /* Sort: L2 first, then L3; within layer by confidence desc */
+    deduped.sort(function(a, b) {
+      var la = (a.layer || 'L2').toUpperCase();
+      var lb = (b.layer || 'L2').toUpperCase();
+      if (la !== lb) return la < lb ? -1 : 1;
+      return parseFloat(b.confidence_raw || 0) - parseFloat(a.confidence_raw || 0);
+    });
+
+    panel.style.display = 'block';
+    tbody.innerHTML = deduped.map(function(p) {
+      var conf = p.confidence_raw ? (parseFloat(p.confidence_raw) * 100).toFixed(1) + '%' : '—';
+      var lyr  = (p.layer || 'L2').toUpperCase();
+      return '<tr>' +
+        '<td><a href="/browse?target=' + encodeURIComponent(p.uniprot_ac) +
+          '" class="fw-500 text-decoration-none">' + esc(p.uniprot_ac) + '</a>' +
+          ' <span class="badge" style="background:#3B82F6;color:#fff;font-size:0.6rem;">AI</span></td>' +
+        '<td>' + layerLabel(lyr) + '</td>' +
+        '<td>' + esc(p.predicted_moa || '—') + '</td>' +
+        '<td class="text-end">' + conf + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  /* ── Synergy Scoreboard ──────────────────────────────────────────────── */
+  function renderSynergyScoreboard(syn, data) {
+    var tbody = document.getElementById('synergy-tbody');
+    if (!tbody) return;
+
+    function fmtSI(v) {
+      var n = parseFloat(v);
+      return (!v || isNaN(n) || String(v).toLowerCase() === 'nan') ? '—' : n.toFixed(2);
+    }
+    function fmtPct(v) {
+      var n = parseFloat(v);
+      return (!v || isNaN(n) || String(v).toLowerCase() === 'nan') ? '—' : n.toFixed(2) + '%';
+    }
+
+    var rows = '';
+
+    /* Row 1: Current experimental */
+    rows += '<tr>' +
+      '<td><span class="fw-600">' + esc(syn.current_pattern || 'No assay data') + '</span><br>' +
+        '<small class="text-muted">Current — experimental data</small></td>' +
+      '<td class="text-end fw-600">' + fmtSI(syn.current_si) + '</td>' +
+      '<td class="text-end">' + fmtPct(syn.current_approval_rate) + '</td>' +
+      '</tr>';
+
+    /* ── AI upgrade rows ── */
+    var aiRows = '';
+    var hasL2 = data.ai_predictions && data.ai_predictions.some(function(p) {
+      return p.layer === 'L2' && p.is_high_confidence === 'True';
+    });
+    var hasL3 = data.ai_predictions && data.ai_predictions.some(function(p) {
+      return p.layer === 'L3' && p.is_high_confidence === 'True';
+    });
+
+    if (hasL2) {
+      var synL2 = synMap['L1+L2+L4'] || {};
+      aiRows += '<tr class="table-primary sg-ai-row">' +
+        '<td><span class="fw-600">L1+L2(AI)+L4</span>' +
+        '<div style="font-size:0.75rem;color:#64748B;">With GPCRact L2 upgrade</div></td>' +
+        '<td class="text-center fw-600 text-primary">' +
+        (synL2.bliss_SI ? Number(synL2.bliss_SI).toFixed(2) : '—') + '</td>' +
+        '<td class="text-center">' +
+        (synL2.approval_rate_pct ? Number(synL2.approval_rate_pct).toFixed(2) + '%' : '—') +
+        '</td></tr>';
+    }
+    if (hasL3) {
+      var synL3 = synMap['L1+L3+L4'] || {};
+      aiRows += '<tr class="table-primary sg-ai-row">' +
+        '<td><span class="fw-600">L1+L3(AI)+L4</span>' +
+        '<div style="font-size:0.75rem;color:#64748B;">With GPCRact L3 upgrade</div></td>' +
+        '<td class="text-center fw-600 text-primary">' +
+        (synL3.bliss_SI ? Number(synL3.bliss_SI).toFixed(2) : '—') + '</td>' +
+        '<td class="text-center">' +
+        (synL3.approval_rate_pct ? Number(synL3.approval_rate_pct).toFixed(2) + '%' : '—') +
+        '</td></tr>';
+    }
+    rows += aiRows;
+
+    /* Row 3: Full-chain reference — values read dynamically from /api/synergy_stats */
+    function renderFullChainRow() {
+      var fc = fullChainRow;
+      var nCpd = fc ? fc.n_compounds : '—';
+      var si   = fc ? parseFloat(fc.bliss_SI).toFixed(2) : '—';
+      var rate = fc ? parseFloat(fc.approval_rate_pct).toFixed(2) + '%' : '—';
+      rows += '<tr class="table-light">' +
+        '<td><span class="fw-600">Full_chain</span><br>' +
+          '<small class="text-muted">Reference — ' + esc(String(nCpd)) + ' compounds (L1+L2+L3+L4)</small></td>' +
+        '<td class="text-end fw-600">' + si + ' <span class="text-warning fw-600">★</span></td>' +
+        '<td class="text-end">' + rate + '</td>' +
+        '</tr>';
+      tbody.innerHTML = rows;
+      /* Update footnote conditionally */
+      var noteEl = document.getElementById('synergy-note');
+      if (noteEl) {
+        var noteText = 'Bliss SI > 1 indicates synergistic co-occurrence with clinical approval.';
+        if (hasL2 && hasL3) {
+          noteText += '<br><span style="font-size:0.78rem;color:#94A3B8;">' +
+            '&dagger; AI-predicted full chain (L2+L3 simultaneously) is not shown: ' +
+            'compounds lacking both experimental layers are under-studied (selection bias), ' +
+            'and L2&ndash;L3 co-prediction conflates correlated layers (Fisher OR&nbsp;=&nbsp;9.24), ' +
+            'yielding no clinical enrichment above background.' +
+            '<br>' +
+            '</span>';
+        }
+        noteEl.innerHTML = noteText;
+      }
+    }
+
+    /* fullChainRow may not yet be loaded (race); retry up to 2s */
+    if (fullChainRow) {
+      renderFullChainRow();
+    } else {
+      var attempts = 0;
+      var timer = setInterval(function() {
+        attempts++;
+        if (fullChainRow || attempts >= 10) {
+          clearInterval(timer);
+          renderFullChainRow();
+        }
+      }, 200);
+    }
+  }
+
+  /* ── Target Profile Table ────────────────────────────────────────────── */
+  function renderTargetTable(chains, aiPreds) {
+    var tbody      = document.getElementById('target-profile-tbody');
+    var countLabel = document.getElementById('target-count-label');
+    if (!tbody) return;
+    if (countLabel) countLabel.textContent = chains.length + ' GPCR targets';
+
+    if (chains.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No assay chain records found.</td></tr>';
+      return;
+    }
+
+    /* Build per-layer AI lookup: layer → Set<uniprot_ac> */
+    var aiLayerMap = buildAILayerMap(aiPreds);
+
+    function cellState(state, layerKey, uniprot_ac) {
+      var s = (state || '').toLowerCase();
+      if (s === 'active')   return '<span class="badge bg-success" style="font-size:0.65rem;">Active</span>';
+      if (s === 'inactive') return '<span class="badge bg-danger"  style="font-size:0.65rem;">Inactive</span>';
+      /* AI-predicted for this specific layer & target */
+      if ((layerKey === 'L2' || layerKey === 'L3') && aiLayerMap[layerKey] && aiLayerMap[layerKey][uniprot_ac]) {
+        return '<span class="badge" style="background:#3B82F6;color:#fff;font-size:0.65rem;animation:pulse 1.5s infinite;">AI ↑</span>';
+      }
+      return '<span class="text-muted">—</span>';
+    }
+
+    tbody.innerHTML = chains.map(function(c) {
+      var isApproved = c.is_approved === 'True';
+      return '<tr' + (isApproved ? ' class="sg-row-syn"' : '') + '>' +
+        '<td><a href="/browse?target=' + encodeURIComponent(c.uniprot_ac) +
+          '" class="fw-600 text-decoration-none">' + esc(c.gene_name) + '</a>' +
+          '<div style="font-size:0.7rem;color:#94A3B8;">' + esc(c.uniprot_ac) + '</div></td>' +
+        '<td>' + cellState(c.L1, 'L1', c.uniprot_ac) + '</td>' +
+        '<td>' + cellState(c.L2, 'L2', c.uniprot_ac) + '</td>' +
+        '<td>' + cellState(c.L3, 'L3', c.uniprot_ac) + '</td>' +
+        '<td>' + cellState(c.L4, 'L4', c.uniprot_ac) + '</td>' +
+        '<td><code style="font-size:0.73rem;">' + esc(c.chain_pattern || '—') + '</code></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  /* ── Repurposing Predictions ─────────────────────────────────────────── */
+  function renderRepurposing(rows) {
+    if (!rows || rows.length === 0) return;
+    var section = document.getElementById('repurposing-section');
+    var tbody   = document.getElementById('repurposing-tbody');
+    if (!section || !tbody) return;
+
+    section.style.display = 'block';
+    tbody.innerHTML = rows
+      .slice()
+      .sort(function(a, b) {
+        if (a.layer !== b.layer) return a.layer < b.layer ? -1 : 1;
+        return parseFloat(b.confidence_raw || 0) - parseFloat(a.confidence_raw || 0);
+      })
+      .map(function(r) {
+        var lyrLabel = (r.layer || '').toUpperCase() === 'L3'
+          ? 'L3 \u2014 \u03b2-Arrestin Recruitment'
+          : 'L2 \u2014 G-Protein Coupling';
+        var confRaw = parseFloat(r.confidence_raw);
+        var conf = isNaN(confRaw) ? '\u2014' : (confRaw * 100).toFixed(1) + '%';
+        return '<tr>' +
+          '<td style="font-size:0.82rem;white-space:nowrap;">' + lyrLabel + '</td>' +
+          '<td class="fw-600">' +
+            '<a href="/browse?target=' + encodeURIComponent(r.uniprot || r.uniprot_ac || '') +
+              '" class="text-decoration-none">' + esc(r.gene_name || '\u2014') + '</a>' +
+          '</td>' +
+          '<td class="text-muted" style="font-size:0.82rem;">' +
+            esc(r.gpcr_family || '\u2014') + '</td>' +
+          '<td>' + esc(r.predicted_moa || '\u2014') + '</td>' +
+          '<td class="text-end fw-600">' + conf + '</td>' +
+        '</tr>';
+      }).join('');
+  }
+
+})();
+</script>
+{% endblock %}

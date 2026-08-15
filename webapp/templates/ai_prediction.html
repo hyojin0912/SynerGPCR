@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — AI Prediction{% endblock %}
+
+{% block head %}
+<style>
+  .sg-perf-table { font-size: 0.84rem; }
+  .sg-perf-table th { background: #f1f5f9; font-weight: 600; }
+  .sg-perf-table td, .sg-perf-table th { padding: 0.45rem 0.7rem; vertical-align: middle; }
+  .sg-3pt-card { border-radius: 8px; padding: 1rem; font-size: 0.85rem; }
+  .sg-3pt-card .sg-3pt-label { font-weight: 600; color: #475569; font-size: 0.78rem; }
+  .sg-3pt-card .sg-3pt-val { font-weight: 700; font-size: 1.15rem; }
+  .sg-demo-card { border-left: 4px solid var(--bs-primary); }
+  .sg-demo-card .card-header { font-weight: 600; font-size: 0.92rem; }
+  .sg-rp-class { font-size: 0.72rem; padding: 2px 7px; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 1 — GPCRact Methodology
+════════════════════════════════════════════════════════════════════ #}
+<h4 class="fw-700 mb-3" style="color:#1E293B;">AI Prediction</h4>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header sg-card-header">GPCRact: Structure-Based Prediction of Ligand-Induced GPCR Activity</div>
+  <div class="card-body">
+    <div class="row g-4">
+
+      {# ── Left: text ── #}
+      <div class="col-lg-7">
+        <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;">
+          GPCRact is an E(n)-equivariant graph neural network (EGNN) that
+          predicts G-protein coupling [L2 (G-Protein Coupling)] and
+          β-arrestin recruitment [L3 (β-Arrestin Recruitment)] activities
+          de novo from 3D atomic structural graphs of the GPCR binding/allosteric
+          site and the ligand. Its two-stage hierarchical architecture explicitly
+          models allosteric signal propagation: Stage 1 (Interaction Module)
+          encodes ligand–receptor interactions via bidirectional cross-attention
+          at the binding site, generating an interaction signal; Stage 2
+          (Allosteric Propagation Module) injects this signal into the full
+          receptor graph, propagates it through local EGNN layers (capturing 3D
+          geometry) and global self-attention (capturing long-range
+          communication), and outputs the pharmacological mode of action
+          (agonist/antagonist).
+        </p>
+        <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;">
+          GPCRact was trained on cell-based functional bioassay data and
+          evaluated on a held-out set of clinically approved drugs, providing
+          a clinically relevant benchmark. The L3 model was fine-tuned from
+          the L2 model using β-arrestin-specific assay data.
+        </p>
+
+        {# Performance table #}
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-bordered sg-perf-table mb-1">
+            <thead>
+              <tr>
+                <th>Layer</th><th>Test set</th><th>BACC</th>
+                <th>n (test)</th><th>Operating threshold</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>L2 (G-Protein Coupling)</td>
+                <td>Approved drugs</td>
+                <td><strong>0.875</strong></td>
+                <td>395</td>
+                <td>t ≥ 0.40</td>
+              </tr>
+              <tr>
+                <td>L3 (β-Arrestin Recruitment)</td>
+                <td>Approved drugs</td>
+                <td><strong>0.834</strong></td>
+                <td>83</td>
+                <td>t ≥ 0.97</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="text-muted mb-0" style="font-size:0.78rem;">
+            Train: cell-based bioassays; Test: clinically approved drugs.
+            BACC = balanced accuracy.
+          </p>
+        </div>
+
+        {# Dynamic coverage note #}
+        <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;" id="coverage-note">
+          High-confidence predictions cover — GPCR targets
+          and 104,641 compound–GPCR pairs.
+        </p>
+
+        {# Links #}
+        <div class="d-flex flex-wrap gap-3 mb-3" style="font-size:0.85rem;">
+          <a href="https://academic.oup.com/bib/article/27/1/bbaf719/8426121"
+             target="_blank" rel="noopener">
+            GPCRact Paper (Briefings in Bioinformatics, 2026) &#x2197;
+          </a>
+          <a href="https://github.com/hyojin0912/HJ-GPCRact/tree/main"
+             target="_blank" rel="noopener">
+            GitHub &#x2197;
+          </a>
+        </div>
+
+        {# AI disclaimer #}
+        <div class="sg-ai-disclaimer">
+          <strong>[AI-predicted, not experimentally validated]</strong>
+          All GPCRact predictions are computationally generated and have
+          not been independently confirmed in the laboratory.
+        </div>
+      </div>
+
+      {# ── Right: figures ── #}
+      <div class="col-lg-5">
+        <figure class="mb-3">
+          <img src="{{ url_for('static', path='figures/fig_gpcract_perf_L2.png') }}"
+               style="max-width:100%;height:auto;border-radius:4px;cursor:zoom-in;"
+               loading="lazy"
+               alt="GPCRact L2 performance — BACC 0.875"
+               onclick="document.getElementById('fig-modal-img').src=this.src;new bootstrap.Modal(document.getElementById('fig-modal')).show();">
+          <figcaption class="mt-1" style="font-size:0.8rem;color:#475569;">
+            (a) G-Protein Coupling (L2) — BACC 0.875, n = 395
+          </figcaption>
+        </figure>
+        <figure class="mb-0">
+          <img src="{{ url_for('static', path='figures/fig_gpcract_perf_L3.png') }}"
+               style="max-width:100%;height:auto;border-radius:4px;cursor:zoom-in;"
+               loading="lazy"
+               alt="GPCRact L3 performance — BACC 0.834"
+               onclick="document.getElementById('fig-modal-img').src=this.src;new bootstrap.Modal(document.getElementById('fig-modal')).show();">
+          <figcaption class="mt-1" style="font-size:0.8rem;color:#475569;">
+            (b) β-Arrestin Recruitment (L3) — BACC 0.834, n = 83
+          </figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 2 — AI Completion Synergy Evidence (3-Point)
+════════════════════════════════════════════════════════════════════ #}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header sg-card-header">AI Completion Recovers ~79% of Experimental Synergy</div>
+  <div class="card-body">
+    <div class="row g-4">
+
+      {# Left: figure #}
+      <div class="col-lg-7">
+        <figure class="mb-0">
+          <img src="{{ url_for('static', path='figures/fig_gpcract_3point_v2.png?v=2') }}"
+               style="max-width:100%;height:auto;border-radius:4px;cursor:zoom-in;"
+               loading="lazy"
+               alt="GPCRact 3-point SI panel — AI completion recovers ~79% of experimental synergy"
+               onclick="document.getElementById('fig-modal-img').src=this.src;new bootstrap.Modal(document.getElementById('fig-modal')).show();">
+          <figcaption class="mt-2" style="font-size:0.8rem;color:#475569;">
+            AI-based chain completion recovers approximately 79% of the
+            experimental synergy benchmark at both signalling layers
+            (L2: G-Protein Coupling and L3: β-Arrestin Recruitment).
+          </figcaption>
+        </figure>
+      </div>
+
+      {# Right: summary cards #}
+      <div class="col-lg-5">
+        <div class="row g-3" id="three-point-cards">
+          <div class="col-6">
+            <div class="sg-3pt-card bg-light" id="card-3pt-L2">
+              <p class="fw-700 mb-2" style="font-size:0.9rem;color:#1E293B;">L2 — G-Protein Coupling</p>
+              <div class="mb-1"><span class="sg-3pt-label">Baseline SI:</span> <span class="sg-3pt-val" id="L2-baseline">—</span></div>
+              <div class="mb-1"><span class="sg-3pt-label">GPCRact SI:</span> <span class="sg-3pt-val text-primary" id="L2-gpcract">—</span></div>
+              <div class="mb-1"><span class="sg-3pt-label">Ceiling SI:</span> <span class="sg-3pt-val" id="L2-ceiling">—</span></div>
+              <div class="mb-1"><span class="sg-3pt-label">Recovery:</span> <span class="sg-3pt-val text-success" id="L2-recovery">—</span></div>
+              <div><span class="sg-3pt-label">n (pool):</span> <span id="L2-npool">—</span></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="sg-3pt-card bg-light" id="card-3pt-L3">
+              <p class="fw-700 mb-2" style="font-size:0.9rem;color:#1E293B;">L3 — β-Arrestin Recruitment</p>
+              <div class="mb-1"><span class="sg-3pt-label">Baseline SI:</span> <span class="sg-3pt-val" id="L3-baseline">—</span></div>
+              <div class="mb-1"><span class="sg-3pt-label">GPCRact SI:</span> <span class="sg-3pt-val text-primary" id="L3-gpcract">—</span></div>
+              <div class="mb-1"><span class="sg-3pt-label">Ceiling SI:</span> <span class="sg-3pt-val" id="L3-ceiling">—</span></div>
+              <div class="mb-1"><span class="sg-3pt-label">Recovery:</span> <span class="sg-3pt-val text-success" id="L3-recovery">—</span></div>
+              <div><span class="sg-3pt-label">n (pool):</span> <span id="L3-npool">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-muted mt-3 mb-0" style="font-size:0.82rem;line-height:1.6;">
+          Bliss SI values are computed within matched compound pools
+          (binder-gated L1+L4 baseline). See the
+          <a href="/about#bliss-si" style="color:inherit;text-decoration:underline dotted;">About</a>
+          page for full methodology.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 3 — AI-Enabled Synergy Candidates
+════════════════════════════════════════════════════════════════════ #}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header sg-card-header" id="candidates">AI-Enabled Synergy Candidates</div>
+  <div class="card-body">
+
+    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.85rem;">
+      Compounds with experimentally confirmed L1 (Receptor Binding) and
+      L4 (Reporter Gene Activity) assay results, whose intermediate signalling
+      layer(s) were absent from experimental records and filled by
+      GPCRact at high confidence. These compounds exhibit assay-chain
+      patterns most strongly associated with clinical approval.
+      <span class="sg-ai-tag sg-ai-tag--warning">[AI-predicted, not experimentally validated]</span>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="btn-group btn-group-sm" role="group" id="ap-filter-group">
+        <button type="button" class="btn btn-outline-primary active"
+                data-layer="" data-approved="">All</button>
+        <button type="button" class="btn btn-outline-primary"
+                data-layer="L2" data-approved="">L2-filled</button>
+        <button type="button" class="btn btn-outline-primary"
+                data-layer="L2+L3" data-approved="">L2+L3-filled</button>
+        <button type="button" class="btn btn-outline-primary"
+                data-layer="" data-approved="true">Approved</button>
+      </div>
+      <span class="text-muted" id="ap-count-label" style="font-size:0.82rem;">—</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>Compound</th><th>Clinical Status</th>
+            <th>AI-filled Layer(s)</th><th>L2 MoA / Conf</th>
+            <th>L3 MoA / Conf</th><th>Chain Pattern</th>
+          </tr>
+        </thead>
+        <tbody id="ap-tbody">
+          <tr><td colspan="7" class="text-center py-5 text-muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    <div class="d-flex align-items-center justify-content-between mt-3"
+         id="ap-pagination" style="display:none!important;">
+      <button class="btn btn-sm btn-outline-secondary" id="ap-prev"
+              disabled>← Previous</button>
+      <span class="text-muted" id="ap-page-label"
+            style="font-size:0.82rem;"></span>
+      <button class="btn btn-sm btn-outline-secondary"
+              id="ap-next">Next →</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 4 — AI-Predicted Repurposing Hypotheses
+════════════════════════════════════════════════════════════════════ #}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header sg-card-header" id="repurposing">AI-Predicted Repurposing Hypotheses</div>
+  <div class="card-body">
+
+    <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;">
+      Approved drugs predicted by GPCRact to engage GPCR targets outside
+      their established receptor class ("cross-family" predictions). Each
+      entry is assigned one or more of the following categories:
+      <ul style="margin-top:0.5rem;margin-bottom:0.5rem;font-size:0.86rem;">
+        <li><strong>Novel Indication:</strong> the predicted target is associated
+          with disease indications outside the drug's current approved use.
+          The repurposing hypothesis derives from the known target–disease
+          association, not from a direct indication prediction.</li>
+        <li><strong>Polypharmacology:</strong> the drug is predicted to engage
+          additional GPCR targets within a related therapeutic context.</li>
+        <li><strong>Biased Signalling:</strong> at the predicted target, the drug
+          shows opposing predicted modes of action across the two functional
+          signalling layers — active via L2 (G-Protein Coupling) but inactive
+          via L3 (β-Arrestin Recruitment), or vice versa. This pattern is
+          consistent with biased agonism (functional selectivity) and may carry
+          distinct downstream pharmacological consequences.</li>
+      </ul>
+    </p>
+
+    {# Demo highlight cards #}
+    <div class="row g-3 mb-4" id="rp-demo-row"></div>
+
+    {# Filter bar #}
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="btn-group btn-group-sm" role="group" id="rp-filter-group">
+        <button type="button" class="btn btn-outline-primary active"
+                data-class="">All</button>
+        <button type="button" class="btn btn-outline-primary"
+                data-class="TYPE_NOVEL_INDICATION">Novel Indication</button>
+        <button type="button" class="btn btn-outline-primary"
+                data-class="TYPE_POLYPHARMACOLOGY">Polypharmacology</button>
+        <button type="button" class="btn btn-outline-primary"
+                data-class="TYPE_BIASED_SIGNALLING">Biased Signalling</button>
+      </div>
+      <span class="text-muted" id="rp-count-label" style="font-size:0.82rem;">—</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm sg-browse-table mb-0">
+        <thead>
+          <tr>
+            <th>Drug</th><th>Known Indication</th><th>Predicted Target</th>
+            <th>Family</th><th>Layer</th><th>MoA</th>
+            <th>Confidence</th><th>Class</th>
+          </tr>
+        </thead>
+        <tbody id="rp-tbody">
+          <tr><td colspan="8" class="text-center py-5 text-muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    <div class="d-flex align-items-center justify-content-between mt-3"
+         id="rp-pagination" style="display:none!important;">
+      <button class="btn btn-sm btn-outline-secondary" id="rp-prev"
+              disabled>← Previous</button>
+      <span class="text-muted" id="rp-page-label"
+            style="font-size:0.82rem;"></span>
+      <button class="btn btn-sm btn-outline-secondary"
+              id="rp-next">Next →</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+
+{# ════════════════════════════════════════════════════════════════════
+   FIGURE ZOOM MODAL
+════════════════════════════════════════════════════════════════════ #}
+<div class="modal fade" id="fig-modal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-dark">
+      <div class="modal-header border-0 pb-0">
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-2">
+        <img id="fig-modal-img" src="" style="max-width:100%;
+             max-height:85vh;object-fit:contain;border-radius:4px;">
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+(function() {
+  'use strict';
+
+  /* ── helpers ── */
+  function esc(s) { if (s == null) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+  function pct1(v) { return v != null ? (Number(v) * 100).toFixed(1) + '%' : '—'; }
+  function pct2(v) { return v != null ? (Number(v) * 100).toFixed(2) + '%' : '—'; }
+  function si2(v) { return v != null ? Number(v).toFixed(2) : '—'; }
+  function truncate(s, n) { if (!s) return ''; return s.length > n ? s.substring(0, n) + '…' : s; }
+
+  function layerLabel(lyr) {
+    if (lyr === 'L3') return 'L3 — β-Arrestin Recruitment';
+    return 'L2 — G-Protein Coupling';
+  }
+
+  var CLASS_MAP = {
+    'TYPE_NOVEL_INDICATION':  { label: 'Novel Indication',  cls: 'bg-primary' },
+    'TYPE_POLYPHARMACOLOGY':  { label: 'Polypharmacology',  cls: 'bg-info text-dark' },
+    'TYPE_BIASED_SIGNALLING': { label: 'Biased Signalling', cls: 'bg-warning text-dark' },
+    'TYPE_PEPTIDE_UNCERTAIN': { label: 'Peptide/Uncertain', cls: 'bg-secondary' }
+  };
+
+  function classBadge(raw) {
+    if (!raw) return '\u2014';
+    var parts = raw.split(';').map(function(s) { return s.trim(); }).filter(Boolean);
+    var hasBiased = parts.indexOf('TYPE_BIASED_SIGNALLING') !== -1;
+    var hasNovel  = parts.indexOf('TYPE_NOVEL_INDICATION')  !== -1;
+    var hasPoly   = parts.indexOf('TYPE_POLYPHARMACOLOGY')  !== -1;
+
+    var badges = [];
+    if (hasBiased) {
+      badges.push('<span class="badge bg-warning text-dark sg-rp-class">Biased Signalling</span>');
+    }
+    if (hasNovel) {
+      badges.push('<span class="badge bg-primary sg-rp-class">Novel Indication</span>');
+    }
+    if (hasPoly) {
+      badges.push('<span class="badge bg-info text-dark sg-rp-class">Polypharmacology</span>');
+    }
+    if (badges.length === 0) {
+      var first = parts[0];
+      var m = CLASS_MAP[first] || { label: first, cls: 'bg-secondary' };
+      badges.push('<span class="badge ' + m.cls + ' sg-rp-class">' + esc(m.label) + '</span>');
+    }
+    return badges.join(' ');
+  }
+
+  /* ── SECTION 1: coverage note ── */
+  fetch('/api/stats').then(function(r) { return r.json(); }).then(function(st) {
+    var el = document.getElementById('coverage-note');
+    if (el && st.n_ai_targets != null) {
+      el.innerHTML = 'High-confidence predictions cover <strong>' +
+        Number(st.n_ai_targets).toLocaleString() + '</strong> GPCR targets and <strong>104,641</strong> compound–GPCR pairs.';
+    }
+  });
+
+  /* ── SECTION 2: 3-point panel ── */
+  fetch('/api/gpcract_3point').then(function(r) { return r.json(); }).then(function(rows) {
+    ['L2', 'L3'].forEach(function(lyr) {
+      var lr = rows.filter(function(r) { return r.layer === lyr; });
+      var byPt = {};
+      lr.forEach(function(r) { byPt[r.point] = r; });
+      var b = byPt['baseline'], g = byPt['gpcract'], c = byPt['ceiling'];
+      if (b) document.getElementById(lyr + '-baseline').textContent = si2(b.SI);
+      if (g) {
+        document.getElementById(lyr + '-gpcract').textContent = si2(g.SI);
+        document.getElementById(lyr + '-recovery').textContent =
+          g.recovery_pct != null ? Number(g.recovery_pct).toFixed(1) + '%' : '—';
+        document.getElementById(lyr + '-npool').textContent =
+          g.n_pool != null ? Number(g.n_pool).toLocaleString() : '—';
+      }
+      if (c) document.getElementById(lyr + '-ceiling').textContent = si2(c.SI);
+    });
+  });
+
+  /* ── SECTION 3: candidates — client-side pagination ── */
+  var apAllData   = [];
+  var apPage      = 0;
+  var AP_PER_PAGE = 100;
+
+  function apRender() {
+    var tbody  = document.getElementById('ap-tbody');
+    var label  = document.getElementById('ap-count-label');
+    var pgDiv  = document.getElementById('ap-pagination');
+    var pgLbl  = document.getElementById('ap-page-label');
+    var prevBtn = document.getElementById('ap-prev');
+    var nextBtn = document.getElementById('ap-next');
+
+    var total  = apAllData.length;
+    var start  = apPage * AP_PER_PAGE;
+    var end    = Math.min(start + AP_PER_PAGE, total);
+    var page   = apAllData.slice(start, end);
+    var totalPages = Math.ceil(total / AP_PER_PAGE) || 1;
+
+    label.textContent = total.toLocaleString() + ' candidate' +
+                        (total !== 1 ? 's' : '');
+
+    if (page.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 ' +
+                        'text-muted">No candidates match this filter.</td></tr>';
+      pgDiv.style.display = 'none';
+      return;
+    }
+
+    var html = '';
+    page.forEach(function(c) {
+      var l2Conf = c.L2_confidence != null ? pct1(c.L2_confidence) : '—';
+      var l2Moa  = c.L2_predicted_moa || '—';
+      var l3Conf = c.L3_confidence != null ? pct1(c.L3_confidence) : '—';
+      var l3Moa  = c.L3_predicted_moa || '—';
+      var approved = (c.is_approved === 'True')
+        ? '<span class="badge bg-success">Approved</span>' : '—';
+      html += '<tr>' +
+        '<td><a href="/compound/' + esc(c.InChIKey) + '">' +
+          esc(c.preferred_name || c.InChIKey) + '</a></td>' +
+        '<td>' + (function(c) {
+          if (c.is_approved === 'True') return '<span class="badge bg-success" style="font-size:0.72rem;">Approved</span>';
+          var ph = (c.clinical_phase || '').trim();
+          if (!ph || ph === 'Investigational') return '<span class="text-muted" style="font-size:0.75rem;">Investigational</span>';
+          var num = ph.replace(/^Phase\s*/i, '');
+          return '<span class="badge bg-warning text-dark px-2 py-1" style="font-size:0.72rem;">Phase ' + esc(num) + '</span>';
+        })(c) + '</td>' +
+        '<td><span class="sg-ai-tag">' + esc(c.ai_filled_layers) + '</span></td>' +
+        '<td>' + esc(l2Moa) + ' / ' + l2Conf + '</td>' +
+        '<td>' + esc(l3Moa) + ' / ' + l3Conf + '</td>' +
+        '<td>' + esc(c.chain_pattern || '—') + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+
+    pgDiv.style.removeProperty('display');
+    pgLbl.textContent = 'Page ' + (apPage + 1) + ' of ' + totalPages +
+                        ' (' + (start + 1) + '–' + end + ' of ' +
+                        total.toLocaleString() + ')';
+    prevBtn.disabled = (apPage === 0);
+    nextBtn.disabled = (apPage >= totalPages - 1);
+  }
+
+  function loadCandidates(layer, isApproved) {
+    var url = '/api/candidates?limit=1500';
+    if (layer)      url += '&layer='       + encodeURIComponent(layer);
+    if (isApproved) url += '&is_approved=' + encodeURIComponent(isApproved);
+    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+      apAllData = data.candidates || [];
+      apPage    = 0;
+      apRender();
+    });
+  }
+
+  document.getElementById('ap-prev').addEventListener('click', function() {
+    if (apPage > 0) { apPage--; apRender();
+      document.getElementById('ap-tbody')
+              .closest('.card').scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+  document.getElementById('ap-next').addEventListener('click', function() {
+    var maxPage = Math.ceil(apAllData.length / AP_PER_PAGE) - 1;
+    if (apPage < maxPage) { apPage++; apRender();
+      document.getElementById('ap-tbody')
+              .closest('.card').scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+
+  document.getElementById('ap-filter-group').addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    this.querySelectorAll('button').forEach(function(b) {
+      b.classList.remove('active'); });
+    btn.classList.add('active');
+    loadCandidates(btn.dataset.layer, btn.dataset.approved);
+  });
+
+  loadCandidates('', '');
+
+  /* ── SECTION 4: repurposing ── */
+  var repurposingData = [];
+
+  function renderDemoCards(rows) {
+    var demos = rows.filter(function(r) { return r.is_demo === 'True'; });
+    var container = document.getElementById('rp-demo-row');
+    if (demos.length === 0) { container.innerHTML = ''; return; }
+
+    /* Group by drug_name */
+    var grouped = {};
+    var order = [];
+    demos.forEach(function(r) {
+      if (!grouped[r.drug_name]) {
+        grouped[r.drug_name] = [];
+        order.push(r.drug_name);
+      }
+      grouped[r.drug_name].push(r);
+    });
+
+    var html = '';
+    order.forEach(function(drugName) {
+      var entries = grouped[drugName];
+      /* Sort L2 before L3 */
+      entries.sort(function(a, b) {
+        return (a.layer || '').localeCompare(b.layer || '');
+      });
+
+      /* Use first entry for shared fields */
+      var first = entries[0];
+      var indication = truncate(first.known_indication || '', 70);
+
+      /* Build layer rows */
+      var layerRows = entries.map(function(e) {
+        var confPct = pct2(e.confidence_raw);
+        var moaBadge = e.predicted_moa === 'agonist'
+          ? '<span class="badge bg-success" style="font-size:0.68rem;">agonist</span>'
+          : '<span class="badge bg-danger"  style="font-size:0.68rem;">antagonist</span>';
+        return '<tr style="font-size:0.82rem;">' +
+          '<td class="fw-600 text-nowrap">' + esc(e.layer) + '</td>' +
+          '<td>' + moaBadge + '</td>' +
+          '<td class="text-end fw-600">' + confPct + '</td>' +
+          '</tr>';
+      }).join('');
+
+      /* Primary badge uses first entry's class but with BIASED priority */
+      var primaryClass = entries.map(function(e) { return e.repurposing_class || ''; }).join(';');
+
+      html += '<div class="col-lg-4 col-md-6">' +
+        '<div class="card sg-demo-card h-100 shadow-sm border-0">' +
+        '<div class="card-header bg-transparent" style="padding:0.6rem 1rem;">' +
+          '<a href="/compound/' + esc(first.inchikey) + '" class="fw-700 text-decoration-none">' +
+            esc(drugName) + '</a>' +
+          ' ' + classBadge(primaryClass) +
+        '</div>' +
+        '<div class="card-body" style="font-size:0.84rem;padding:0.75rem 1rem;">' +
+          '<div class="mb-1"><strong>Predicted target:</strong> ' +
+            '<a href="/browse?target=' + esc(first.predicted_uniprot) + '" class="text-decoration-none">' +
+              esc(first.predicted_gpcr_name) + '</a></div>' +
+          '<div class="mb-2"><strong>Family:</strong> ' + esc(first.predicted_gpcr_family) + '</div>' +
+
+          '<table class="table table-sm mb-2" style="font-size:0.82rem;margin-bottom:0.5rem!important;">' +
+            '<thead><tr>' +
+              '<th style="font-size:0.75rem;padding:2px 4px;">Layer</th>' +
+              '<th style="font-size:0.75rem;padding:2px 4px;">MoA</th>' +
+              '<th class="text-end" style="font-size:0.75rem;padding:2px 4px;">Confidence</th>' +
+            '</tr></thead>' +
+            '<tbody>' + layerRows + '</tbody>' +
+          '</table>' +
+
+          '<div style="font-size:0.78rem;color:#64748B;"><strong>Known indication:</strong> ' +
+            esc(indication) + '</div>' +
+        '</div></div></div>';
+    });
+    container.innerHTML = html;
+  }
+
+  var rpPage      = 0;
+  var RP_PER_PAGE = 100;
+  var rpFiltered  = [];
+
+  function renderRepurposingTable(rows) {
+    var tbody   = document.getElementById('rp-tbody');
+    var label   = document.getElementById('rp-count-label');
+    var pgDiv   = document.getElementById('rp-pagination');
+    var pgLbl   = document.getElementById('rp-page-label');
+    var prevBtn = document.getElementById('rp-prev');
+    var nextBtn = document.getElementById('rp-next');
+
+    var total  = rows.length;
+    var start  = rpPage * RP_PER_PAGE;
+    var end    = Math.min(start + RP_PER_PAGE, total);
+    var page   = rows.slice(start, end);
+    var totalPages = Math.ceil(total / RP_PER_PAGE) || 1;
+
+    var nDrugs = 0;
+    var seenDrugs = {};
+    rows.forEach(function(r) { if (r.inchikey && !seenDrugs[r.inchikey]) { seenDrugs[r.inchikey] = 1; nDrugs++; } });
+    label.textContent = total.toLocaleString() + ' AI prediction record' +
+                        (total !== 1 ? 's' : '') +
+                        ' (' + nDrugs + ' drug' + (nDrugs !== 1 ? 's' : '') + ')';
+
+    if (page.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 ' +
+                        'text-muted">No entries match this filter.</td></tr>';
+      pgDiv.style.display = 'none';
+      return;
+    }
+
+    var html = '';
+    page.forEach(function(r) {
+      html += '<tr>' +
+        '<td><a href="/compound/' + esc(r.inchikey) + '">' +
+          esc(r.drug_name || r.inchikey) + '</a></td>' +
+        '<td>' + esc(truncate(r.known_indication || '', 50)) + '</td>' +
+        '<td><a href="/browse?target=' + esc(r.predicted_uniprot) + '">' +
+          esc(r.predicted_gpcr_name) + '</a></td>' +
+        '<td>' + esc(r.predicted_gpcr_family || '—') + '</td>' +
+        '<td>' + esc(layerLabel(r.layer)) + '</td>' +
+        '<td>' + esc(r.predicted_moa || '—') + '</td>' +
+        '<td>' + pct2(r.confidence_raw) + '</td>' +
+        '<td>' + classBadge(r.repurposing_class) + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+
+    pgDiv.style.removeProperty('display');
+    pgLbl.textContent = 'Page ' + (rpPage + 1) + ' of ' + totalPages +
+                        ' (' + (start + 1) + '–' + end + ' of ' +
+                        total.toLocaleString() + ')';
+    prevBtn.disabled = (rpPage === 0);
+    nextBtn.disabled = (rpPage >= totalPages - 1);
+  }
+
+  function filterRepurposing(cls) {
+    rpFiltered = cls
+      ? repurposingData.filter(function(r) {
+          return r.repurposing_class &&
+                 r.repurposing_class.indexOf(cls) !== -1; })
+      : repurposingData.slice();
+    rpPage = 0;
+    renderRepurposingTable(rpFiltered);
+  }
+
+  document.getElementById('rp-prev').addEventListener('click', function() {
+    if (rpPage > 0) { rpPage--; renderRepurposingTable(rpFiltered);
+      document.getElementById('rp-tbody')
+              .closest('.card').scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+  document.getElementById('rp-next').addEventListener('click', function() {
+    var maxPage = Math.ceil(rpFiltered.length / RP_PER_PAGE) - 1;
+    if (rpPage < maxPage) { rpPage++; renderRepurposingTable(rpFiltered);
+      document.getElementById('rp-tbody')
+              .closest('.card').scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+
+  document.getElementById('rp-filter-group').addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    this.querySelectorAll('button').forEach(function(b) {
+      b.classList.remove('active'); });
+    btn.classList.add('active');
+    filterRepurposing(btn.dataset.class);
+  });
+
+  fetch('/api/repurposing?limit=1500').then(function(r) {
+    return r.json();
+  }).then(function(data) {
+    repurposingData = data.repurposing || [];
+    rpFiltered      = repurposingData.slice();
+    renderDemoCards(repurposingData);
+    renderRepurposingTable(rpFiltered);
+    if (window.location.hash === '#repurposing') {
+      setTimeout(function() {
+        var el = document.getElementById('repurposing');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  });
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,201 @@
+UniProt_AC,gene_name,uniprot_entry_name,protein_name,gpcr_class_letter,gpcr_class_name,gpcr_family,organism,chembl_target_id,n_pairs_in_db,has_gpcract_prediction
+A0A2J8P2M1,P2RY14,A0A2J8P2M1_PANTR,Purinergic receptor P2Y14,,,,Pan troglodytes,CHEMBL3831325,40,False
+A5A4K8,,A5A4K8_RABIT,Motilin receptor,,,,Oryctolagus cuniculus,CHEMBL5306,27,False
+A6I4C9,Ccr1,A6I4C9_RAT,C-C motif chemokine receptor 1,,,,Rattus norvegicus,CHEMBL5499,22,False
+A6IZR3,Mlnr,A6IZR3_RAT,Thyrotropin-releasing hormone receptor,,,,Rattus norvegicus,CHEMBL3875,23,False
+A6QR73,Gpr39,A6QR73_RAT,G protein-coupled receptor 39-1b,,,,Rattus norvegicus,CHEMBL3091267,7,False
+A8K2H7,C3AR1,A8K2H7_HUMAN,"Complement component 3a receptor 1, isoform CRA_a",A,Class A (Rhodopsin),Other,Homo sapiens,CHEMBL3308978,4,False
+B0FL73,,B0FL73_CAVPO,,,,,,CHEMBL5471,281,False
+B2GV46,Ffar3,FFAR3_RAT,Free fatty acid receptor 3,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3886125,15,False
+B6F061,,B6F061_MACFA,,,,,,CHEMBL1921663,1,False
+B9UM26,gpr81,B9UM26_CANLF,G-protein coupled receptor 81,,,,Canis lupus familiaris,CHEMBL2146352,1,False
+B9UM29,gpr81,B9UM29_MACMU,G-protein coupled receptor 81,,,,Macaca mulatta,CHEMBL2146351,1,False
+D4ADR1,Lpar5,D4ADR1_RAT,Lysophosphatidic acid receptor 5,,,,Rattus norvegicus,CHEMBL4295535,11,False
+F1NJH8,TRPV1,F1NJH8_CHICK,Transient receptor potential cation channel subfamily V member 1,,,,Gallus gallus,CHEMBL2412949,7,False
+G3HDX1,,G3HDX1_CRIGR,,,,,,CHEMBL3988626,5,False
+G3V906,Hcar1,G3V906_RAT,Hydroxycarboxylic acid receptor 1,,,,Rattus norvegicus,CHEMBL2146353,4,False
+G7Q3P2,,G7Q3P2_MACFA,Glucose-dependent insulinotropic receptor,,,,Macaca fascicularis,CHEMBL3102689,1,False
+H9EUW9,S1PR1,H9EUW9_MACMU,Sphingosine 1-phosphate receptor 1,,,,Macaca mulatta,CHEMBL3559675,4,False
+O00222,GRM8,GRM8_HUMAN,Metabotropic glutamate receptor 8,C,Class C (Glutamate),Metabotropic glutamate receptors,Homo sapiens,CHEMBL3228,169,True
+O00398,P2RY10,P2Y10_HUMAN,Putative P2Y purinoceptor 10,A,Class A (Rhodopsin),Class A orphans,Homo sapiens,CHEMBL3562166,51,False
+O00574,CXCR6,CXCR6_HUMAN,C-X-C chemokine receptor type 6,A,Class A (Rhodopsin),Chemokine receptors,Homo sapiens,CHEMBL5994,63,False
+O00590,ACKR2,ACKR2_HUMAN,Atypical chemokine receptor 2,A,Class A (Rhodopsin),Chemokine receptors,Homo sapiens,CHEMBL4105988,1,False
+O02662,ADRB3,ADRB3_CANLF,Beta-3 adrenergic receptor,A,Class A (Rhodopsin),,Canis lupus familiaris,CHEMBL4400,7,False
+O02824,ADRA1A,ADA1A_RABIT,Alpha-1A adrenergic receptor,A,Class A (Rhodopsin),,Oryctolagus cuniculus,CHEMBL3637,59,False
+O08530,S1pr1,S1PR1_MOUSE,Sphingosine 1-phosphate receptor 1,A,Class A (Rhodopsin),,Mus musculus,CHEMBL1914262,6,False
+O08725,Ghsr,GHSR_RAT,Growth hormone secretagogue receptor type 1,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3278,26,False
+O08790,Fpr-s1,FPRS1_MOUSE,Formyl peptide receptor-related sequence 1,A,Class A (Rhodopsin),,Mus musculus,CHEMBL3407315,12,False
+O14804,TAAR5,TAAR5_HUMAN,Trace amine-associated receptor 5,A,Class A (Rhodopsin),Class A orphans,Homo sapiens,CHEMBL3714046,1,False
+O14842,FFAR1,FFAR1_HUMAN,Free fatty acid receptor 1,A,Class A (Rhodopsin),Free fatty acid receptors,Homo sapiens,CHEMBL4422,1821,True
+O14843,FFAR3,FFAR3_HUMAN,Free fatty acid receptor 3,A,Class A (Rhodopsin),Free fatty acid receptors,Homo sapiens,CHEMBL5201,77,True
+O15303,GRM6,GRM6_HUMAN,Metabotropic glutamate receptor 6,C,Class C (Glutamate),Metabotropic glutamate receptors,Homo sapiens,CHEMBL4573,143,False
+O15552,FFAR2,FFAR2_HUMAN,Free fatty acid receptor 2,A,Class A (Rhodopsin),Free fatty acid receptors,Homo sapiens,CHEMBL5493,229,True
+O35659,Glp1r,GLP1R_MOUSE,Glucagon-like peptide 1 receptor,B1,Class B1 (Secretin),,Mus musculus,CHEMBL1075290,3,False
+O35881,P2ry14,P2Y14_RAT,P2Y purinoceptor 14,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4295660,1,False
+O43193,MLNR,MTLR_HUMAN,Motilin receptor,A,Class A (Rhodopsin),Motilin receptors,Homo sapiens,CHEMBL2203,291,True
+O43194,GPR39,GPR39_HUMAN,G-protein coupled receptor 39,A,Class A (Rhodopsin),Class A orphans,Homo sapiens,CHEMBL3091266,72,False
+O43603,GALR2,GALR2_HUMAN,Galanin receptor 2,A,Class A (Rhodopsin),Galanin receptors,Homo sapiens,CHEMBL3176,110,False
+O43613,HCRTR1,OX1R_HUMAN,Orexin receptor 1,A,Class A (Rhodopsin),Orexin receptors,Homo sapiens,CHEMBL5113,2702,True
+O43614,HCRTR2,OX2R_HUMAN,Orexin receptor 2,A,Class A (Rhodopsin),Orexin receptors,Homo sapiens,CHEMBL4792,2550,True
+O46635,HTR2A,5HT2A_CANLF,5-hydroxytryptamine receptor 2A,A,Class A (Rhodopsin),,Canis lupus familiaris,CHEMBL5781,3,False
+O54798,Brs3,BRS3_MOUSE,Bombesin receptor subtype-3,A,Class A (Rhodopsin),,Mus musculus,CHEMBL1075140,89,False
+O54814,Ccr3,CCR3_RAT,C-C chemokine receptor type 3,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3928,3,False
+O55040,Nmur1,NMUR1_MOUSE,Neuromedin-U receptor 1,A,Class A (Rhodopsin),,Mus musculus,CHEMBL3351216,2,False
+O55193,Ccr2,CCR2_RAT,C-C chemokine receptor type 2,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL1293204,2,False
+O60755,GALR3,GALR3_HUMAN,Galanin receptor 3,A,Class A (Rhodopsin),Galanin receptors,Homo sapiens,CHEMBL2731,266,False
+O70129,C5AR1,C5AR1_CAVPO,C5a anaphylatoxin chemotactic receptor 1,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL2861,6,False
+O70526,BDKRB2,BKRB2_CAVPO,B2 bradykinin receptor,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL4111,268,False
+O70528,HTR4,5HT4R_CAVPO,5-hydroxytryptamine receptor 4,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL5017,249,False
+O75084,FZD7,FZD7_HUMAN,Frizzled-7,Frizzled,Class F (Frizzled),Frizzled,Homo sapiens,CHEMBL3559688,35,True
+O88410,Cxcr3,CXCR3_MOUSE,C-X-C chemokine receptor type 3,A,Class A (Rhodopsin),,Mus musculus,CHEMBL5200,3,False
+O88855,Ltb4r,LT4R1_MOUSE,Leukotriene B4 receptor 1,A,Class A (Rhodopsin),,Mus musculus,CHEMBL2657,1,False
+O88944,Kcnq3,KCNQ3_RAT,Potassium voltage-gated channel subfamily KQT member 3,,,,Rattus norvegicus,CHEMBL5531,8,False
+O95136,S1PR2,S1PR2_HUMAN,Sphingosine 1-phosphate receptor Edg-5,A,Class A (Rhodopsin),Lysophospholipid (S1P) receptors,Homo sapiens,CHEMBL2955,617,True
+O95665,NTSR2,NTR2_HUMAN,Neurotensin receptor 2,A,Class A (Rhodopsin),Neurotensin receptors,Homo sapiens,CHEMBL2514,140,False
+O95838,GLP2R,GLP2R_HUMAN,Glucagon-like peptide 2 receptor,B,Class B1 (Secretin),Glucagon receptor family,Homo sapiens,CHEMBL5844,101,False
+O95977,S1PR4,S1PR4_HUMAN,Sphingosine 1-phosphate receptor Edg-6,A,Class A (Rhodopsin),Lysophospholipid (S1P) receptors,Homo sapiens,CHEMBL3230,669,False
+P01178,OXT,NEU1_HUMAN,Oxytocin-neurophysin 1 proprotein,,,,Homo sapiens,CHEMBL5169107,31,False
+P01185,AVP,NEU2_HUMAN,Vasopressin-neurophysin 2-copeptin,,,,Homo sapiens,,31,False
+P02665,Csn2,CASB_RAT,Beta-casein,,,,Rattus norvegicus,CHEMBL2210,5,False
+P02788,LTF,TRFL_HUMAN,Lactotransferrin,,,,Homo sapiens,CHEMBL4523161,1,False
+P04201,MAS1,MAS_HUMAN,Proto-oncogene Mas,A,Class A (Rhodopsin),Class A orphans,Homo sapiens,CHEMBL3559701,2,False
+P05363,TACR2,NK2R_BOVIN,Substance-K receptor,A,Class A (Rhodopsin),,Bos taurus,CHEMBL4815,2,False
+P07550,ADRB2,ADRB2_HUMAN,Beta-2 adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL210,3041,True
+P08172,CHRM2,ACM2_HUMAN,Muscarinic acetylcholine receptor M2,A,Class A (Rhodopsin),Acetylcholine receptors (muscarinic),Homo sapiens,CHEMBL211,1839,True
+P08173,CHRM4,ACM4_HUMAN,Muscarinic acetylcholine receptor M4,A,Class A (Rhodopsin),Acetylcholine receptors (muscarinic),Homo sapiens,CHEMBL1821,1423,True
+P08482,Chrm1,ACM1_RAT,Muscarinic acetylcholine receptor M1,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL276,545,False
+P08483,Chrm3,ACM3_RAT,Muscarinic acetylcholine receptor M3,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL320,64,False
+P08485,Chrm4,ACM4_RAT,Muscarinic acetylcholine receptor M4,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL317,358,False
+P08588,ADRB1,ADRB1_HUMAN,Beta-1 adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL213,1520,True
+P08908,HTR1A,5HT1A_HUMAN,Serotonin 1a (5-HT1a) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL214,4477,True
+P08909,Htr2c,5HT2C_RAT,5-hydroxytryptamine receptor 2C,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL324,118,False
+P08911,Chrm5,ACM5_RAT,Muscarinic acetylcholine receptor M5,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL277,33,False
+P08912,CHRM5,ACM5_HUMAN,Muscarinic acetylcholine receptor M5,A,Class A (Rhodopsin),Acetylcholine receptors (muscarinic),Homo sapiens,CHEMBL2035,914,True
+P08913,ADRA2A,ADA2A_HUMAN,Alpha-2a adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL1867,915,True
+P09483,Chrna4,ACHA4_RAT,Neuronal acetylcholine receptor subunit alpha-4,,,,Rattus norvegicus,CHEMBL307,3,False
+P09660,Chrne,ACHE_RAT,Acetylcholine receptor subunit epsilon,,,,Rattus norvegicus,CHEMBL4961,2,False
+P0DMS8,ADORA3,AA3R_HUMAN,Adenosine A3 receptor,A,Class A (Rhodopsin),Adenosine receptors,Homo sapiens,CHEMBL256,4718,True
+P0DMS9,TMIGD3,TMIG3_HUMAN,Transmembrane domain-containing protein TMIGD3,,,,Homo sapiens,CHEMBL3712907,39,False
+P10608,Adrb2,ADRB2_RAT,Beta-2 adrenergic receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3754,50,False
+P10828,THRB,THB_HUMAN,Thyroid hormone receptor beta,,,,Homo sapiens,CHEMBL1947,26,False
+P10980,Chrm2,ACM2_RAT,Muscarinic acetylcholine receptor M2,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL309,356,False
+P11229,CHRM1,ACM1_HUMAN,Muscarinic acetylcholine receptor M1,A,Class A (Rhodopsin),Acetylcholine receptors (muscarinic),Homo sapiens,CHEMBL216,2990,True
+P12390,Chrnb2,ACHB2_RAT,Neuronal acetylcholine receptor subunit beta-2,,,,Rattus norvegicus,CHEMBL3001,2,False
+P12392,Chrnb4,ACHB4_RAT,Neuronal acetylcholine receptor subunit beta-4,,,,Rattus norvegicus,CHEMBL2658,1,False
+P12657,Chrm1,ACM1_MOUSE,Muscarinic acetylcholine receptor M1,A,Class A (Rhodopsin),,Mus musculus,CHEMBL3733,24,False
+P13500,CCL2,CCL2_HUMAN,C-C motif chemokine 2,A,Class A (Rhodopsin),Other,Homo sapiens,CHEMBL1649052,29,False
+P13501,CCL5,CCL5_HUMAN,C-C motif chemokine 5,A,Class A (Rhodopsin),Other,Homo sapiens,CHEMBL1275217,3,True
+P13945,ADRB3,ADRB3_HUMAN,Beta-3 adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL246,1477,False
+P14416,DRD2,DRD2_HUMAN,Dopamine D2 receptor,A,Class A (Rhodopsin),Dopamine receptors,Homo sapiens,CHEMBL217,6845,True
+P14600,Tacr1,NK1R_RAT,Substance-P receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4027,45,False
+P14842,Htr2a,5HT2A_RAT,5-hydroxytryptamine receptor 2A,,,,Rattus norvegicus,CHEMBL322,347,False
+P15823,Adra1b,ADA1B_RAT,Alpha-1B adrenergic receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL315,207,False
+P16177,Tacr3,NK3R_RAT,Neuromedin-K receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3154,58,False
+P16235,Lhcgr,LSHR_RAT,Lutropin-choriogonadotropic hormone receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL2456,10,False
+P16473,TSHR,TSHR_HUMAN,Thyroid stimulating hormone receptor,A,Class A (Rhodopsin),Glycoprotein hormone receptors,Homo sapiens,CHEMBL1963,16295,True
+P16610,Tacr2,NK2R_RAT,Substance-K receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4554,182,False
+P18089,ADRA2B,ADA2B_HUMAN,Alpha-2b adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL1942,351,True
+P18090,Adrb1,ADRB1_RAT,Beta-1 adrenergic receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3252,121,False
+P18130,ADRA1A,ADA1A_BOVIN,Alpha-1A adrenergic receptor,A,Class A (Rhodopsin),,Bos taurus,CHEMBL4892,14,False
+P18825,ADRA2C,ADA2C_HUMAN,Alpha-2c adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL1916,475,True
+P18841,ADRA1B,ADA1B_MESAU,Alpha-1B adrenergic receptor,A,Class A (Rhodopsin),,Mesocricetus auratus,CHEMBL3122,6,False
+P18901,Drd1,DRD1_RAT,D(1A) dopamine receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL265,217,False
+P19020,Drd3,DRD3_RAT,D(3) dopamine receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3138,231,False
+P19327,Htr1a,5HT1A_RAT,5-hydroxytryptamine receptor 1A,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL273,118,False
+P20272,Cnr1,CNR1_RAT,Cannabinoid receptor 1,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3571,337,False
+P20288,DRD2,DRD2_BOVIN,D(2) dopamine receptor,A,Class A (Rhodopsin),,Bos taurus,CHEMBL3998,53,False
+P20309,CHRM3,ACM3_HUMAN,Muscarinic acetylcholine receptor M3,A,Class A (Rhodopsin),Acetylcholine receptors (muscarinic),Homo sapiens,CHEMBL245,2125,True
+P20395,Fshr,FSHR_RAT,Follicle-stimulating hormone receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4288,3,False
+P20789,Ntsr1,NTR1_RAT,Neurotensin receptor type 1,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3027,30,False
+P21451,Ednrb,EDNRB_RAT,Endothelin receptor type B,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4631,168,False
+P21452,TACR2,NK2R_HUMAN,Neurokinin 2 receptor,A,Class A (Rhodopsin),Tachykinin receptors,Homo sapiens,CHEMBL2327,729,False
+P21453,S1PR1,S1PR1_HUMAN,Sphingosine 1-phosphate receptor Edg-1,A,Class A (Rhodopsin),Lysophospholipid (S1P) receptors,Homo sapiens,CHEMBL4333,2567,True
+P21462,FPR1,FPR1_HUMAN,Formyl peptide receptor 1,A,Class A (Rhodopsin),Formylpeptide receptors,Homo sapiens,CHEMBL3359,669,True
+P21554,CNR1,CNR1_HUMAN,Cannabinoid CB1 receptor,A,Class A (Rhodopsin),Cannabinoid receptors,Homo sapiens,CHEMBL218,6407,True
+P21556,PTAFR,PTAFR_CAVPO,Platelet-activating factor receptor,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL5136,59,False
+P21728,DRD1,DRD1_HUMAN,Dopamine D1 receptor,A,Class A (Rhodopsin),Dopamine receptors,Homo sapiens,CHEMBL2056,1823,True
+P21730,C5AR1,C5AR1_HUMAN,C5a anaphylatoxin chemotactic receptor,A,Class A (Rhodopsin),Complement peptide receptors,Homo sapiens,CHEMBL2373,352,True
+P21731,TBXA2R,TA2R_HUMAN,Thromboxane A2 receptor,A,Class A (Rhodopsin),Prostanoid receptors,Homo sapiens,CHEMBL2069,1147,True
+P21761,Trhr,TRHR_MOUSE,Thyrotropin-releasing hormone receptor,A,Class A (Rhodopsin),,Mus musculus,CHEMBL2467,36,False
+P21917,DRD4,DRD4_HUMAN,Dopamine D4 receptor,A,Class A (Rhodopsin),Dopamine receptors,Homo sapiens,CHEMBL219,2172,True
+P21918,DRD5,DRD5_HUMAN,Dopamine D5 receptor,A,Class A (Rhodopsin),Dopamine receptors,Homo sapiens,CHEMBL1850,482,True
+P22888,LHCGR,LSHR_HUMAN,Luteinizing hormone/Choriogonadotropin receptor,A,Class A (Rhodopsin),Glycoprotein hormone receptors,Homo sapiens,CHEMBL1854,148,True
+P22909,Adra2a,ADA2A_RAT,Alpha-2A adrenergic receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL327,661,False
+P23385,Grm1,GRM1_RAT,Metabotropic glutamate receptor 1,C,Class C (Glutamate),,Rattus norvegicus,CHEMBL4477,273,False
+P23944,Adra1d,ADA1D_RAT,Alpha-1D adrenergic receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL326,279,False
+P23945,FSHR,FSHR_HUMAN,Follicle stimulating hormone receptor,A,Class A (Rhodopsin),Glycoprotein hormone receptors,Homo sapiens,CHEMBL2024,99,True
+P24530,EDNRB,EDNRB_HUMAN,Endothelin receptor ET-B,A,Class A (Rhodopsin),Endothelin receptors,Homo sapiens,CHEMBL1785,574,True
+P24557,TBXAS1,THAS_HUMAN,Thromboxane-A synthase,,,,Homo sapiens,CHEMBL1835,3,False
+P25021,HRH2,HRH2_HUMAN,Histamine H2 receptor,A,Class A (Rhodopsin),Histamine receptors,Homo sapiens,CHEMBL1941,423,True
+P25023,Bdkrb2,BKRB2_RAT,B2 bradykinin receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL2501,49,False
+P25024,CXCR1,CXCR1_HUMAN,Interleukin-8 receptor A,A,Class A (Rhodopsin),Chemokine receptors,Homo sapiens,CHEMBL4029,206,True
+P25025,CXCR2,CXCR2_HUMAN,Interleukin-8 receptor B,A,Class A (Rhodopsin),Chemokine receptors,Homo sapiens,CHEMBL2434,965,False
+P25090,FPR2,FPR2_HUMAN,Lipoxin A4 receptor,A,Class A (Rhodopsin),Formylpeptide receptors,Homo sapiens,CHEMBL4227,619,True
+P25095,Agtr1,AGTRA_RAT,Type-1 angiotensin II receptor A,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL329,13,False
+P25098,GRK2,GRK2_HUMAN,G protein-coupled receptor kinase 2,,,,Homo sapiens,CHEMBL4079,13,False
+P25099,Adora1,AA1R_RAT,Adenosine receptor A1,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL318,1007,False
+P25100,ADRA1D,ADA1D_HUMAN,Alpha-1d adrenergic receptor,A,Class A (Rhodopsin),Adrenoceptors,Homo sapiens,CHEMBL223,1341,False
+P25101,EDNRA,EDNRA_HUMAN,Endothelin receptor ET-A,A,Class A (Rhodopsin),Endothelin receptors,Homo sapiens,CHEMBL252,953,False
+P25102,Hrh2,HRH2_RAT,Histamine H2 receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4654,92,False
+P25103,TACR1,NK1R_HUMAN,Neurokinin 1 receptor,A,Class A (Rhodopsin),Tachykinin receptors,Homo sapiens,CHEMBL249,1831,True
+P25104,AGTR1,AGTR1_BOVIN,Type-1 angiotensin II receptor,A,Class A (Rhodopsin),,Bos taurus,CHEMBL3374,108,False
+P25105,PTAFR,PTAFR_HUMAN,Platelet activating factor receptor,A,Class A (Rhodopsin),Platelet-activating factor receptors,Homo sapiens,CHEMBL250,117,True
+P25106,ACKR3,ACKR3_HUMAN,C-X-C chemokine receptor type 7,A,Class A (Rhodopsin),Chemokine receptors,Homo sapiens,CHEMBL2010631,286,True
+P25116,F2R,PAR1_HUMAN,Proteinase-activated receptor 1,A,Class A (Rhodopsin),Proteinase-activated receptors,Homo sapiens,CHEMBL3974,675,True
+P25929,NPY1R,NPY1R_HUMAN,Neuropeptide Y receptor type 1,A,Class A (Rhodopsin),Neuropeptide Y receptors,Homo sapiens,CHEMBL4777,1136,True
+P25962,Adrb3,ADRB3_MOUSE,Beta-3 adrenergic receptor,,,,Mus musculus,CHEMBL4030,1,False
+P26255,Adrb3,ADRB3_RAT,Beta-3 adrenergic receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4031,129,False
+P26684,Ednra,EDNRA_RAT,Endothelin-1 receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4566,425,False
+P28190,ADORA1,AA1R_BOVIN,Adenosine receptor A1,A,Class A (Rhodopsin),,Bos taurus,CHEMBL4975,333,False
+P28221,HTR1D,5HT1D_HUMAN,Serotonin 1d (5-HT1d) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL1983,908,True
+P28222,HTR1B,5HT1B_HUMAN,Serotonin 1b (5-HT1b) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL1898,1004,True
+P28223,HTR2A,5HT2A_HUMAN,Serotonin 2a (5-HT2a) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL224,4767,True
+P28335,HTR2C,5HT2C_HUMAN,Serotonin 2c (5-HT2c) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL225,3247,True
+P28336,NMBR,NMBR_HUMAN,Neuromedin B receptor,A,Class A (Rhodopsin),Bombesin receptors,Homo sapiens,CHEMBL3636,93,False
+P28564,Htr1b,5HT1B_RAT,5-hydroxytryptamine receptor 1B,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3459,36,False
+P28565,Htr1d,5HT1D_RAT,5-hydroxytryptamine receptor 1D,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL5450,8,False
+P28566,HTR1E,5HT1E_HUMAN,Serotonin 1e (5-HT1e) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL2182,289,True
+P28647,Adora3,AA3R_RAT,Adenosine receptor A3,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3360,210,False
+P29089,Agtr1b,AGTRB_RAT,Type-1 angiotensin II receptor B,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL263,628,False
+P29274,ADORA2A,AA2AR_HUMAN,Adenosine A2a receptor,A,Class A (Rhodopsin),Adenosine receptors,Homo sapiens,CHEMBL251,5628,True
+P29275,ADORA2B,AA2BR_HUMAN,Adenosine A2b receptor,A,Class A (Rhodopsin),Adenosine receptors,Homo sapiens,CHEMBL255,3931,True
+P29276,Adora2b,AA2BR_RAT,Adenosine receptor A2b,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL2592,22,False
+P29371,TACR3,NK3R_HUMAN,Neurokinin 3 receptor,A,Class A (Rhodopsin),Tachykinin receptors,Homo sapiens,CHEMBL4429,613,False
+P30082,Gcgr,GLR_RAT,Glucagon receptor,,,,Rattus norvegicus,CHEMBL4720,4,False
+P30083,Vipr1,VIPR1_RAT,Vasoactive intestinal polypeptide receptor 1,B1,Class B1 (Secretin),,Rattus norvegicus,CHEMBL1955712,43,False
+P30098,TACR3,NK3R_CAVPO,Neuromedin-K receptor,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL3799,12,False
+P30411,BDKRB2,BKRB2_HUMAN,Bradykinin B2 receptor,A,Class A (Rhodopsin),Bradykinin receptors,Homo sapiens,CHEMBL3157,558,False
+P30518,AVPR2,V2R_HUMAN,Vasopressin V2 receptor,A,Class A (Rhodopsin),Vasopressin and oxytocin receptors,Homo sapiens,CHEMBL1790,745,True
+P30542,ADORA1,AA1R_HUMAN,Adenosine A1 receptor,A,Class A (Rhodopsin),Adenosine receptors,Homo sapiens,CHEMBL226,5602,True
+P30543,Adora2a,AA2AR_RAT,Adenosine receptor A2a,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL302,1013,False
+P30545,Adra2b,ADA2B_MOUSE,Alpha-2B adrenergic receptor,A,Class A (Rhodopsin),,Mus musculus,CHEMBL2405,49,False
+P30547,TACR1,NK1R_CAVPO,Substance-P receptor,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL3942,240,False
+P30548,Tacr1,NK1R_MOUSE,Substance-P receptor,A,Class A (Rhodopsin),,Mus musculus,CHEMBL2668,3,False
+P30550,GRPR,GRPR_HUMAN,Gastrin releasing peptide receptor,A,Class A (Rhodopsin),Bombesin receptors,Homo sapiens,CHEMBL4959,209,True
+P30551,Cckar,CCKAR_RAT,Cholecystokinin receptor type A,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL2871,356,False
+P30552,CCKBR,GASR_CANLF,Gastrin/cholecystokinin type B receptor,A,Class A (Rhodopsin),,Canis lupus familiaris,CHEMBL5595,15,False
+P30553,Cckbr,GASR_RAT,Gastrin/cholecystokinin type B receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3508,223,False
+P30556,AGTR1,AGTR1_HUMAN,Type-1 angiotensin II receptor,A,Class A (Rhodopsin),Angiotensin receptors,Homo sapiens,CHEMBL227,1184,True
+P30557,Ptger3,PE2R3_MOUSE,Prostaglandin E2 receptor EP3 subtype,A,Class A (Rhodopsin),,Mus musculus,CHEMBL4336,15,False
+P30559,OXTR,OXYR_HUMAN,Oxytocin receptor,A,Class A (Rhodopsin),Vasopressin and oxytocin receptors,Homo sapiens,CHEMBL2049,936,True
+P30560,Avpr1a,V1AR_RAT,Vasopressin V1a receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL2868,184,False
+P30729,Drd4,DRD4_RAT,D(4) dopamine receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3361,16,False
+P30872,SSTR1,SSR1_HUMAN,Somatostatin receptor 1,A,Class A (Rhodopsin),Somatostatin receptors,Homo sapiens,CHEMBL1917,444,False
+P30874,SSTR2,SSR2_HUMAN,Somatostatin receptor 2,A,Class A (Rhodopsin),Somatostatin receptors,Homo sapiens,CHEMBL1804,644,True
+P30935,Sstr3,SSR3_MOUSE,Somatostatin receptor type 3,A,Class A (Rhodopsin),,Mus musculus,CHEMBL2238,30,False
+P30936,Sstr3,SSR3_RAT,Somatostatin receptor type 3,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3340,1,False
+P30938,Sstr5,SSR5_RAT,Somatostatin receptor type 5,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4318,9,False
+P30939,HTR1F,5HT1F_HUMAN,Serotonin 1f (5-HT1f) receptor,A,Class A (Rhodopsin),5-Hydroxytryptamine receptors,Homo sapiens,CHEMBL1805,107,True
+P30968,GNRHR,GNRHR_HUMAN,Gonadotropin-releasing hormone receptor,A,Class A (Rhodopsin),Gonadotrophin-releasing hormone receptors,Homo sapiens,CHEMBL1855,1530,True
+P30969,Gnrhr,GNRHR_RAT,Gonadotropin-releasing hormone receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3066,600,False
+P30988,CALCR,CALCR_HUMAN,Calcitonin receptor,B,Class B1 (Secretin),Calcitonin receptors,Homo sapiens,CHEMBL1832,158,True
+P30989,NTSR1,NTR1_HUMAN,Neurotensin receptor 1,A,Class A (Rhodopsin),Neurotensin receptors,Homo sapiens,CHEMBL4123,532,True
+P30994,Htr2b,5HT2B_RAT,5-hydroxytryptamine receptor 2B,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL323,601,False
+P31388,Htr6,5HT6R_RAT,5-hydroxytryptamine receptor 6,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL3372,14,False
+P31389,HRH1,HRH1_CAVPO,Histamine H1 receptor,A,Class A (Rhodopsin),,Cavia porcellus,CHEMBL3943,295,False
+P31390,Hrh1,HRH1_RAT,Histamine H1 receptor,A,Class A (Rhodopsin),,Rattus norvegicus,CHEMBL4701,15,False
+P31391,SSTR4,SSR4_HUMAN,Somatostatin receptor 4,A,Class A (Rhodopsin),Somatostatin receptors,Homo sapiens,CHEMBL1853,516,True
+P31421,Grm2,GRM2_RAT,Metabotropic glutamate receptor 2,C,Class C (Glutamate),,Rattus norvegicus,CHEMBL2851,188,False
+P31422,Grm3,GRM3_RAT,Metabotropic glutamate receptor 3,C,Class C (Glutamate),,Rattus norvegicus,CHEMBL3067,47,False
+P31423,Grm4,GRM4_RAT,Metabotropic glutamate receptor 4,C,Class C (Glutamate),,Rattus norvegicus,CHEMBL2787,42,False
+P31424,Grm5,GRM5_RAT,Metabotropic glutamate receptor 5,C,Class C (Glutamate),,Rattus norvegicus,CHEMBL2564,521,False

@@ -1,0 +1,723 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — Help{% endblock %}
+
+{% block head %}
+<style>
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  .sg-help-sidebar {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+  /* Narrow the sidebar nav pills to ~70% of col width */
+  .sg-help-sidebar .nav {
+    max-width: 70%;
+  }
+  .sg-help-sidebar .nav-link {
+    font-size: 0.83rem;
+    color: var(--sg-mid);
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+  }
+  .sg-help-sidebar .nav-link.active,
+  .sg-help-sidebar .nav-link:hover {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font-weight: 600;
+  }
+
+  /* ── Section headings ────────────────────────────────────── */
+  .sg-help-section {
+    padding-top: 0.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .sg-help-section h5 {
+    font-weight: 700;
+    color: #1E293B;
+    border-bottom: 2px solid #E2E8F0;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .sg-help-section h6 {
+    font-weight: 600;
+    color: #334155;
+    margin-top: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  /* ── Entry-point cards ───────────────────────────────────── */
+  .sg-entry-card {
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 1.1rem 1.2rem;
+    height: 100%;
+    font-size: 0.86rem;
+    color: var(--sg-mid);
+    line-height: 1.65;
+  }
+  .sg-entry-card .sg-entry-title {
+    font-weight: 700;
+    color: #1E293B;
+    font-size: 0.92rem;
+    margin-bottom: 0.5rem;
+  }
+  .sg-entry-card a {
+    font-size: 0.83rem;
+    display: inline-block;
+    margin-top: 0.6rem;
+  }
+
+  /* ── Colour legend ───────────────────────────────────────── */
+  .sg-legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── About callout ───────────────────────────────────────── */
+  .sg-about-callout {
+    background: #F0F9FF;
+    border-left: 4px solid #38BDF8;
+    border-radius: 4px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.83rem;
+    color: #0369A1;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Confidence table ────────────────────────────────────── */
+  .sg-conf-table {
+    font-size: 0.83rem;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+  }
+  .sg-conf-table th {
+    background: #F1F5F9;
+    font-weight: 600;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #E2E8F0;
+  }
+  .sg-conf-table td {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #E2E8F0;
+    vertical-align: top;
+    color: var(--sg-mid);
+  }
+
+  /* ── Search method list ──────────────────────────────────── */
+  .sg-search-method {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.86rem;
+    color: var(--sg-mid);
+    line-height: 1.65;
+  }
+  .sg-search-method strong {
+    color: #1E293B;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  /* ── FAQ accordion tweaks ────────────────────────────────── */
+  .accordion-button {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1E293B;
+  }
+  .accordion-body {
+    font-size: 0.85rem;
+    color: var(--sg-mid);
+    line-height: 1.7;
+  }
+
+  /* ── Tab overview table ──────────────────────────────────── */
+  .sg-tab-table {
+    font-size: 0.85rem;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .sg-tab-table th {
+    background: #F1F5F9;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #E2E8F0;
+    white-space: nowrap;
+  }
+  .sg-tab-table td {
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #E2E8F0;
+    vertical-align: top;
+    color: var(--sg-mid);
+    line-height: 1.6;
+  }
+  .sg-tab-table td:first-child {
+    font-weight: 600;
+    color: #1E293B;
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h4 class="fw-700 mb-4" style="color:#1E293B;">Help</h4>
+
+<div class="row g-4">
+
+  {# ── LEFT SIDEBAR ─────────────────────────────────────────────── #}
+  <div class="col-lg-3">
+    <div class="sg-help-sidebar">
+      <nav>
+        <div class="nav flex-column nav-pills" id="helpNav">
+          <a class="nav-link active" href="#tabs">Tab Overview</a>
+          <a class="nav-link" href="#usage">Usage Guide</a>
+          <a class="nav-link" href="#layers">Assay Layers &amp; AI</a>
+          <a class="nav-link" href="#data">Data Access</a>
+          <a class="nav-link" href="#faq">FAQ</a>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  {# ── MAIN CONTENT ─────────────────────────────────────────────── #}
+  <div class="col-lg-9">
+
+    {# ════════════════════════════════════════════════════════
+       SECTION 0 — Tab Overview
+    ════════════════════════════════════════════════════════ #}
+    <section id="tabs" class="sg-help-section">
+      <h5>Tab Overview</h5>
+      <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;max-width:720px;">
+        SynerGPCR is organised into five main tabs. Each tab serves a
+        distinct entry point into the data.
+      </p>
+      <table class="sg-tab-table">
+        <thead>
+          <tr>
+            <th>Tab</th>
+            <th>Purpose</th>
+            <th>Key Features</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="/">Home</a></td>
+            <td>Overview and global statistics. Start here to understand
+              the scope and key findings of SynerGPCR.</td>
+            <td>Synergy visualisation, DB statistics, quick-start search</td>
+          </tr>
+          <tr>
+            <td><a href="/browse">Browse</a></td>
+            <td>Explore the full database by GPCR target, approved drug,
+              AI candidate, or disease category without a specific
+              search term.</td>
+            <td>GPCR Targets · Approved Drugs · AI Candidates ·
+              Disease Explorer</td>
+          </tr>
+          <tr>
+            <td><a href="/ai-prediction">AI Prediction</a></td>
+            <td>Detailed view of GPCRact AI predictions: model methodology,
+              performance benchmarks, synergy candidate list, and
+              drug repurposing hypotheses.</td>
+            <td>Model description · 3-point synergy panel ·
+              Synergy candidates · Repurposing hypotheses</td>
+          </tr>
+          <tr>
+            <td><a href="/download">Download</a></td>
+            <td>Access all underlying datasets and curated analysis
+              files for downstream use.</td>
+            <td>7 CSV files · REST API endpoints</td>
+          </tr>
+          <tr>
+            <td><a href="/about">About</a></td>
+            <td>Scientific background: assay layer theory, Bliss
+              Synergy Index methodology, data sources, and comparison
+              with existing resources.</td>
+            <td>Layer definitions · SI derivation · Data source table ·
+              GPCRdb comparison</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    {# ════════════════════════════════════════════════════════
+       SECTION 1 — Usage Guide
+    ════════════════════════════════════════════════════════ #}
+    <section id="usage" class="sg-help-section">
+      <h5>Usage Guide</h5>
+
+      {# ── How to Search ── #}
+      <h6>How to Search</h6>
+
+      <div class="sg-search-method">
+        <strong>1 — Name or identifier (navbar autocomplete)</strong>
+        Enter a compound name, InChIKey, gene symbol, UniProt accession,
+        or disease name into the search bar (minimum 2 characters).
+        Results are ranked in order: gene symbol prefix → compound name
+        prefix → disease name prefix → protein name contains → compound
+        name contains → disease contains → InChIKey exact → UniProt exact.
+        Selecting a result navigates directly to the corresponding
+        compound, target, or disease page.
+      </div>
+
+      <div class="sg-search-method">
+        <strong>2 — Structure similarity (SMILES fallback)</strong>
+        If your compound is not found by name or InChIKey, enter a valid
+        SMILES string. SynerGPCR will compute an ECFP4 fingerprint
+        (Morgan radius 2, 2048 bits) and search 277,544 assay-bearing
+        compounds by Tanimoto similarity (threshold 0.5). The most
+        similar compounds and their assay chain profiles are returned.
+        If no results appear, the scaffold has no close precedent in
+        public GPCR assay data.
+      </div>
+
+      <div class="sg-search-method">
+        <strong>3 — Browse without a search term</strong>
+        Navigate to the <a href="/browse">Browse</a> tab to explore
+        four pre-built views: GPCR Targets, Approved Drugs, AI
+        Candidates, and Disease Explorer. No search term is required.
+      </div>
+
+      {# ── Three Entry Points ── #}
+      <h6 class="mt-4">Three Ways to Enter SynerGPCR</h6>
+      <div class="row g-3 mt-1">
+
+        {# Card A #}
+        <div class="col-md-4">
+          <div class="sg-entry-card">
+            <div class="sg-entry-title">I have a compound of interest</div>
+            Search by compound name, InChIKey, or SMILES. The compound
+            page shows the experimental assay chain across all four layers:
+            L1 (Receptor Binding) → L2 (G-Protein Coupling) →
+            L3 (β-Arrestin Recruitment) → L4 (Reporter Gene Activity).
+            Where experimental data are absent, GPCRact fills missing
+            L2/L3 entries with AI predictions. SynerGPCR has pre-identified
+            1,179 AI-augmented synergy candidates where GPCRact
+            supplies a missing L2 or L3 state.
+            <a href="/ai-prediction#candidates">
+              View AI-Enabled Synergy Candidates →
+            </a>
+            <br>
+            <a href="/compound/PNDKCRDVVKJPKG-WHERJAGFSA-N">
+              Try with Cenicriviroc (Phase 3) →
+            </a>
+          </div>
+        </div>
+
+        {# Card B #}
+        <div class="col-md-4">
+          <div class="sg-entry-card">
+            <div class="sg-entry-title">I have an approved drug</div>
+            Search an approved drug by name. The compound page shows its
+            full experimental assay chain and, in the AI Prediction Panel,
+            any cross-family predictions — GPCRs from receptor families
+            outside the drug's established indication, classified as
+            Novel-indication, Polypharmacology, or Biased-signalling
+            hypotheses. Cross-family repurposing hypotheses are available
+            for 146 approved drugs in SynerGPCR.
+            <a href="/ai-prediction#repurposing">
+              View AI-Predicted Repurposing Hypotheses →
+            </a>
+            <br>
+            <a href="/compound/CEUORZQYGODEFX-UHFFFAOYSA-N">
+              Try with Aripiprazole →
+            </a>
+          </div>
+        </div>
+
+        {# Card C #}
+        <div class="col-md-4">
+          <div class="sg-entry-card">
+            <div class="sg-entry-title">I have a GPCR target</div>
+            Search a gene symbol or UniProt accession. Beyond raw assay
+            counts, SynerGPCR provides the conditional approval rate —
+            the fraction of compounds co-active at Receptor Binding and
+            G-Protein Coupling that are clinically approved — alongside
+            the pooled baseline (1.40%) and the enrichment rank within
+            the same disease category (12 therapeutic areas). This
+            supports the question: "Which target in this disease area
+            is most promising?"
+            <a href="/browse?target=P14416">
+              Try with DRD2 (Dopamine receptor D2) →
+            </a>
+          </div>
+        </div>
+
+      </div>{# /row #}
+    </section>
+
+    {# ════════════════════════════════════════════════════════
+       SECTION 2 — Assay Layers & AI Predictions
+    ════════════════════════════════════════════════════════ #}
+    <section id="layers" class="sg-help-section">
+      <h5>Understanding Assay Layers and AI Predictions</h5>
+
+      {# ── Chain diagram colour coding ── #}
+      <h6>Reading the Assay Chain Diagram</h6>
+      <p style="font-size:0.86rem;color:var(--sg-mid);line-height:1.65;">
+        Each compound page displays an assay chain pipeline showing
+        activity at four mechanistically ordered layers. Node colours
+        indicate the evidence type:
+      </p>
+      <div class="d-flex flex-wrap gap-3 mb-3" style="font-size:0.85rem;">
+        <span>
+          <span class="sg-legend-dot" style="background:#22C55E;"></span>
+          Experimentally active
+        </span>
+        <span>
+          <span class="sg-legend-dot" style="background:#EF4444;"></span>
+          Experimentally inactive
+        </span>
+        <span>
+          <span class="sg-legend-dot" style="background:#94A3B8;"></span>
+          No experimental data
+        </span>
+        <span>
+          <span class="sg-legend-dot"
+                style="background:#3B82F6;
+                       box-shadow:0 0 0 3px #BFDBFE;"></span>
+          AI-predicted active
+        </span>
+      </div>
+
+      <div class="sg-about-callout">
+        For a full description of each assay layer and the Bliss Synergy
+        Index methodology, see the <a href="/about">About</a> page.
+      </div>
+
+      {# ── AI Prediction confidence ── #}
+      <h6>How AI Predictions Are Generated</h6>
+      <p style="font-size:0.86rem;color:var(--sg-mid);line-height:1.65;">
+        GPCRact (an E(n)-equivariant graph neural network) predicts
+        L2 (G-Protein Coupling) and L3 (β-Arrestin Recruitment)
+        activities from 3D structural graphs of the GPCR binding site
+        and the ligand. Each prediction produces three outputs:
+      </p>
+      <ul style="font-size:0.86rem;color:var(--sg-mid);line-height:1.75;">
+        <li>
+          <strong>binding_prob</strong> — probability that the compound
+          binds the receptor (Stage 1 binding head; binder if ≥ 0.5).
+        </li>
+        <li>
+          <strong>ago_prob / ant_prob</strong> — softmax probabilities
+          for agonist vs. antagonist activity (Stage 2 activity head;
+          predicted MoA = argmax of the two).
+        </li>
+        <li>
+          <strong>confidence</strong> = binding_prob × max(ago_prob,
+          ant_prob). A compound is classified AI-active when
+          binding_prob ≥ 0.5 <em>and</em> confidence ≥ the operating
+          threshold (L2: 0.40 / L3: 0.97). The operating threshold
+          for each layer was selected to maximise the Bliss Synergy
+          Index margin over the Monte Carlo random-assignment null.
+        </li>
+      </ul>
+      <p style="font-size:0.86rem;color:var(--sg-mid);line-height:1.65;">
+        AI predictions are shown only for the 151 GPCR targets with
+        sufficient 3D structural data. Predictions for peptide- and
+        glycoprotein-hormone receptors (e.g. GLP1R, PTH1R) are
+        excluded due to compound-modality mismatch with the training
+        set.
+      </p>
+
+    </section>
+
+    {# ════════════════════════════════════════════════════════
+       SECTION 3 — Data Access
+    ════════════════════════════════════════════════════════ #}
+    <section id="data" class="sg-help-section">
+      <h5>Data Access and Download</h5>
+
+      <p style="font-size:0.86rem;color:var(--sg-mid);line-height:1.65;max-width:720px;">
+        All SynerGPCR datasets are freely available from the
+        <a href="/download">Download</a> page. The following files
+        are provided:
+      </p>
+
+      <ul style="font-size:0.86rem;color:var(--sg-mid);line-height:1.9;">
+        <li>
+          <strong>compound_lookup.csv</strong> — compound metadata
+          (name, SMILES, clinical phase, approval status) for all
+          assay-bearing compounds.
+        </li>
+        <li>
+          <strong>target_lookup.csv</strong> — GPCR target metadata
+          (gene symbol, UniProt accession, GPCR class/family,
+          AI prediction availability) for all 600 targets.
+        </li>
+        <li>
+          <strong>compound_chain_summary.csv</strong> — pair-level
+          assay chain records: the experimental activity state at each
+          layer for every compound–GPCR pair (396,169 pairs).
+        </li>
+        <li>
+          <strong>gpcract_predictions.csv</strong> — high-confidence
+          GPCRact AI predictions for L2 (G-Protein Coupling) and
+          L3 (β-Arrestin Recruitment); 104,641 retained prediction
+          cells across 151 GPCR targets.
+        </li>
+        <li>
+          <strong>candidate_shortlist.csv</strong> — the 1,179
+          AI-augmented synergy candidates where GPCRact supplies
+          a missing L2 or L3 state.
+        </li>
+        <li>
+          <strong>synergy_stats.csv</strong> — Bliss Synergy Index
+          values for all observed chain patterns.
+        </li>
+        <li>
+          <strong>single_layer_table.csv</strong> — single-layer
+          approval rates and compound counts used for SI calculation.
+        </li>
+      </ul>
+
+      <h6>REST API</h6>
+      <p style="font-size:0.86rem;color:var(--sg-mid);line-height:1.65;">
+        All data are accessible programmatically via a REST API
+        (base URL: <code>https://synergpcr.kaist.ac.kr</code>,
+        no authentication required). Key endpoints:
+      </p>
+      <table class="sg-conf-table">
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Method</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/api/compound/{InChIKey}</code></td>
+            <td>GET</td>
+            <td>Full compound detail: assay chain, AI predictions,
+              synergy context</td>
+          </tr>
+          <tr>
+            <td><code>/api/target/{UniProt_AC}</code></td>
+            <td>GET</td>
+            <td>Target detail: gene, family, clinical enrichment</td>
+          </tr>
+          <tr>
+            <td><code>/api/target/{UniProt_AC}/enrichment</code></td>
+            <td>GET</td>
+            <td>Conditional approval rate and enrichment rank</td>
+          </tr>
+          <tr>
+            <td><code>/api/candidates</code></td>
+            <td>GET</td>
+            <td>AI-augmented synergy candidate list (filterable)</td>
+          </tr>
+          <tr>
+            <td><code>/api/tanimoto</code></td>
+            <td>POST</td>
+            <td>SMILES → ECFP4 Tanimoto similarity search
+              <br><code style="font-size:0.78rem;">
+              {"smiles": "…", "top_n": 10, "threshold": 0.5}
+              </code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    {# ════════════════════════════════════════════════════════
+       SECTION 4 — FAQ
+    ════════════════════════════════════════════════════════ #}
+    <section id="faq" class="sg-help-section">
+      <h5>Frequently Asked Questions</h5>
+
+      <div class="accordion accordion-flush" id="helpFAQ">
+
+        {# Q1 — Bliss SI #}
+        <div class="accordion-item border rounded mb-2">
+          <h2 class="accordion-header" id="faq-h1">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#faq-c1"
+                    aria-expanded="false" aria-controls="faq-c1">
+              What is the Bliss Synergy Index (SI) shown throughout SynerGPCR?
+            </button>
+          </h2>
+          <div id="faq-c1" class="accordion-collapse collapse"
+               aria-labelledby="faq-h1" data-bs-parent="#helpFAQ">
+            <div class="accordion-body">
+              The Bliss Synergy Index (SI) quantifies how much the
+              observed clinical approval rate of a compound group
+              exceeds the rate expected if each assay layer contributed
+              independently.<br><br>
+              SI = observed approval rate / E<sub>Bliss</sub>, where
+              E<sub>Bliss</sub> = 1 − Π(1 − P<sub>Li</sub>) and
+              P<sub>Li</sub> is the single-layer approval rate for each
+              layer included in the pattern. SI &gt; 1 indicates
+              synergistic clinical enrichment beyond statistical
+              independence.<br><br>
+              A full derivation and a worked example are provided on the
+              <a href="/about">About</a> page.
+            </div>
+          </div>
+        </div>
+
+        {# Q2 — Compound not found #}
+        <div class="accordion-item border rounded mb-2">
+          <h2 class="accordion-header" id="faq-h2">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#faq-c2"
+                    aria-expanded="false" aria-controls="faq-c2">
+              My compound is not in the database. What can I do?
+            </button>
+          </h2>
+          <div id="faq-c2" class="accordion-collapse collapse"
+               aria-labelledby="faq-h2" data-bs-parent="#helpFAQ">
+            <div class="accordion-body">
+              SynerGPCR covers 277,544 compounds with at least one
+              assay record against a GPCR target. If your compound is
+              not found by name or InChIKey, enter a valid SMILES
+              string into the search bar. SynerGPCR will search for
+              structurally similar compounds using Tanimoto similarity
+              (ECFP4, threshold 0.5). If no results appear, your
+              compound's scaffold has no close precedent in public GPCR
+              assay data.
+            </div>
+          </div>
+        </div>
+
+        {# Q3 — Co-active #}
+        <div class="accordion-item border rounded mb-2">
+          <h2 class="accordion-header" id="faq-h3">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#faq-c3"
+                    aria-expanded="false" aria-controls="faq-c3">
+              What does "co-active" mean in the target enrichment view?
+            </button>
+          </h2>
+          <div id="faq-c3" class="accordion-collapse collapse"
+               aria-labelledby="faq-h3" data-bs-parent="#helpFAQ">
+            <div class="accordion-body">
+              A compound is counted as co-active at a target when it
+              has experimental activity at both Receptor Binding (L1)
+              and G-Protein Coupling (L2) at the same target —
+              downstream L3/L4 activity is not part of this criterion.
+              The conditional approval rate among co-active compounds is
+              shown alongside the pooled baseline (1.40%, computed across
+              all 211 targets with experimental co-active data), correcting
+              for the trivial enrichment that heavily-screened targets
+              would otherwise show due to selection bias.
+            </div>
+          </div>
+        </div>
+
+        {# Q4 — No AI predictions #}
+        <div class="accordion-item border rounded mb-2">
+          <h2 class="accordion-header" id="faq-h4">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#faq-c4"
+                    aria-expanded="false" aria-controls="faq-c4">
+              Why do some GPCR targets have no AI predictions?
+            </button>
+          </h2>
+          <div id="faq-c4" class="accordion-collapse collapse"
+               aria-labelledby="faq-h4" data-bs-parent="#helpFAQ">
+            <div class="accordion-body">
+              GPCRact requires a 3D structural model of the GPCR binding
+              site. Only 151 of 600 GPCR targets in SynerGPCR have
+              sufficient structural data for high-confidence predictions.<br><br>
+              Additionally, predictions for certain peptide- and
+              glycoprotein-hormone receptors (e.g. GLP1R, PTH1R) are
+              excluded: GPCRact was trained primarily on small-molecule
+              data, and predictions against receptors whose endogenous
+              ligands are peptides or glycoproteins cannot be considered
+              reliable due to the mismatch in compound modality.
+              Where AI predictions are absent, only experimental data
+              are shown.
+            </div>
+          </div>
+        </div>
+
+        {# Q5 — Beta-arrestin caution #}
+        <div class="accordion-item border rounded mb-2">
+          <h2 class="accordion-header" id="faq-h5">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#faq-c5"
+                    aria-expanded="false" aria-controls="faq-c5">
+              Why should β-Arrestin Recruitment results be interpreted with caution?
+            </button>
+          </h2>
+          <div id="faq-c5" class="accordion-collapse collapse"
+               aria-labelledby="faq-h5" data-bs-parent="#helpFAQ">
+            <div class="accordion-body">
+              β-Arrestin Recruitment assays can reflect biased agonism —
+              a ligand preferentially activating one downstream signalling
+              pathway over another. In addition, empirical data in
+              SynerGPCR show a strong statistical dependency between
+              G-Protein Coupling and β-Arrestin Recruitment activity
+              (Fisher OR = 9.24, p ≈ 0), which violates the independence
+              assumption underlying the Bliss Synergy Index. For these
+              reasons, β-Arrestin Recruitment results should be read as
+              a supplementary signal rather than a standalone measure
+              of GPCR activity, and synergy values for chain patterns
+              that include this layer carry an explicit caveat.
+            </div>
+          </div>
+        </div>
+
+        {# Q6 — Download AI predictions #}
+        <div class="accordion-item border rounded mb-2">
+          <h2 class="accordion-header" id="faq-h6">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#faq-c6"
+                    aria-expanded="false" aria-controls="faq-c6">
+              Can I download all AI predictions?
+            </button>
+          </h2>
+          <div id="faq-c6" class="accordion-collapse collapse"
+               aria-labelledby="faq-h6" data-bs-parent="#helpFAQ">
+            <div class="accordion-body">
+              Yes. The complete high-confidence prediction set (104,641
+              cells across 151 GPCR targets) is available as
+              <code>gpcract_predictions.csv</code> from the
+              <a href="/download">Download</a> page. This file contains
+              only retained records that passed all quality filters:
+              confidence ≥ 0.40 for G-Protein Coupling predictions and
+              ≥ 0.97 for β-Arrestin Recruitment predictions.
+            </div>
+          </div>
+        </div>
+
+      </div>{# /accordion #}
+    </section>
+
+  </div>{# /col-lg-9 #}
+</div>{# /row #}
+
+{# Sidebar scroll-spy (lightweight, no dependencies) #}
+<script>
+(function () {
+  var sections = ['tabs', 'usage', 'layers', 'data', 'faq'];
+  var links    = {};
+  sections.forEach(function (id) {
+    links[id] = document.querySelector('#helpNav a[href="#' + id + '"]');
+  });
+
+  function onScroll () {
+    var scrollY = window.scrollY + 120;
+    var current = sections[0];
+    sections.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) current = id;
+    });
+    sections.forEach(function (id) {
+      if (links[id]) links[id].classList.toggle('active', id === current);
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+
+{% endblock %}

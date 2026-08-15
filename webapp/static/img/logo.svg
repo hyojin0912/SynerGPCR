@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 68" width="200" height="68">
+  <defs>
+    <marker id="arr" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto">
+      <path d="M0,0.5 L4.5,2.5 L0,4.5 z" fill="#64748B"/>
+    </marker>
+    <filter id="glow-l4" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="blur"/>
+      <feFlood flood-color="#3B82F6" flood-opacity="0.78" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!--
+    VERTICAL STACK — r=16, h=13.86
+    viewBox 200×68, chain centered at x=100
+
+    Hex centers (y=20): L1=40  L2=80  L3=120  L4=160
+    chain span: x 24–176   margin: 24px each side
+    hex top: 6.14   hex bottom: 33.86
+    text baseline: 62   cap-top ≈ 40   gap from hex: ~6 px
+  -->
+
+  <!-- L1 — Binding (light grey) -->
+  <polygon points="56,20 48,33.86 32,33.86 24,20 32,6.14 48,6.14"
+           fill="#CBD5E1" stroke="#94A3B8" stroke-width="1.2"/>
+  <text x="40" y="20" text-anchor="middle" dominant-baseline="central"
+        font-family="Inter,system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="800" fill="#334155">L1</text>
+
+  <line x1="57" y1="20" x2="63" y2="20"
+        stroke="#64748B" stroke-width="1.1" marker-end="url(#arr)"/>
+
+  <!-- L2 — G-protein Proximal (sky blue) -->
+  <polygon points="96,20 88,33.86 72,33.86 64,20 72,6.14 88,6.14"
+           fill="#93C5FD" stroke="#60A5FA" stroke-width="1.2"/>
+  <text x="80" y="20" text-anchor="middle" dominant-baseline="central"
+        font-family="Inter,system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="800" fill="#1D4ED8">L2</text>
+
+  <line x1="97" y1="20" x2="103" y2="20"
+        stroke="#64748B" stroke-width="1.1" marker-end="url(#arr)"/>
+
+  <!-- L3 — beta-arrestin Biased (medium blue) -->
+  <polygon points="136,20 128,33.86 112,33.86 104,20 112,6.14 128,6.14"
+           fill="#60A5FA" stroke="#3B82F6" stroke-width="1.2"/>
+  <text x="120" y="20" text-anchor="middle" dominant-baseline="central"
+        font-family="Inter,system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="800" fill="#ffffff">L3</text>
+
+  <line x1="137" y1="20" x2="143" y2="20"
+        stroke="#64748B" stroke-width="1.1" marker-end="url(#arr)"/>
+
+  <!-- L4 — Reporter Distal (strong blue + glow) -->
+  <polygon points="176,20 168,33.86 152,33.86 144,20 152,6.14 168,6.14"
+           fill="#3B82F6" stroke="#2563EB" stroke-width="1.6"
+           filter="url(#glow-l4)"/>
+  <text x="160" y="20" text-anchor="middle" dominant-baseline="central"
+        font-family="Inter,system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="800" fill="#ffffff">L4</text>
+
+  <!-- Wordmark — centered at x=100, directly below chain -->
+  <text x="100" y="62" text-anchor="middle"
+        font-family="Inter,system-ui,-apple-system,sans-serif"
+        font-size="26" letter-spacing="-0.5">
+    <tspan font-weight="500" fill="#94A3B8">Syner</tspan><tspan font-weight="700" fill="#FFFFFF">GPCR</tspan>
+  </text>
+</svg>

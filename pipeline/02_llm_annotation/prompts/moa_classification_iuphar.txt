@@ -1,0 +1,59 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : Clinical / pharmacological MoA classification (IUPHAR)
+Notebook           : 02_llm_annotation/moa_iuphar.ipynb
+Input              : IUPHAR 'Action' label + 'Assay Description'
+Output table       : Output/DB/IUPHAR/NAR/IUPHAR_MoA_Labeled.csv (2,377 rows)
+                     retains 'Action' and 'Assay Description' (inputs) alongside
+                     MoA_Label + Label_Source
+
+Model              : models/gemini-2.5-flash-lite
+Temperature        : 0.0
+response_mime_type : application/json
+Schema declaration : typing_extensions.TypedDict `MoAExtraction`
+                       moa_label : str
+Random seed        : none -> NOT deterministic even at temperature 0.0
+Rate control       : time.sleep(1) before every call
+
+OUTPUT PARSING — NOT strict JSON
+  Despite the declared schema, the response is consumed as lowercase raw text and
+  matched by substring against an ORDERED list of valid labels:
+      ["inverse agonist", "partial agonist", "agonist", "antagonist",
+       "pam", "nam", "binder"]
+  Order matters: "inverse agonist" and "partial agonist" are tested before
+  "agonist" so the longer label wins. The first substring hit is returned.
+
+LABEL SET (7)
+  agonist | antagonist | partial agonist | inverse agonist | pam | nam | binder
+
+RETRY POLICY
+  retries = 7. On HTTP 429 / ResourceExhausted: sleep `wait`, then wait *= 2,
+  starting at 5 s (exponential backoff, uncapped).
+  On any other exception: print and break.
+
+FALLBACK ON FAILURE
+  "binder" — returned both when no valid label is found in the response text and
+  when all retries are exhausted. Failures collapse to binding-only evidence.
+
+================================================================================
+PROMPT (verbatim; {action} and {description} are substituted per record)
+================================================================================
+
+    You are an expert pharmacologist.
+    Determine the final Mechanism of Action (MoA) of a ligand based on its IUPHAR 'Action' label and 'Assay Description'.
+    Keep in mind that 'Negative' action in an assay measuring IP1/Calcium mobilization often implies an 'antagonist', not necessarily a 'nam'.
+
+    Classify into exactly one of the following labels:
+    - "agonist"
+    - "antagonist"
+    - "partial agonist"
+    - "inverse agonist"
+    - "pam"
+    - "nam"
+    - "binder"
+
+    Return ONLY the matching label in lowercase. Do not use quotes, code blocks, or extra text.
+
+    Action: "{action}"
+    Assay Description: "{description}"

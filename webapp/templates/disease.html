@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — {{ disease_name }}{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+
+<div id="disease-loading" class="text-center py-5">
+  <div class="spinner-border text-primary me-2" role="status"></div>
+  Loading disease data…
+</div>
+
+<div id="disease-content" style="display:none;">
+
+  <!-- Header -->
+  <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-700 mb-1" id="d-name"></h2>
+      <span class="badge bg-secondary me-2" id="d-category"></span>
+      <code class="text-muted" style="font-size:0.8rem;" id="d-cui"></code>
+    </div>
+    <a href="/browse?tab=disease" class="btn btn-sm btn-outline-secondary">
+      ← Disease Explorer
+    </a>
+  </div>
+
+  <!-- Stats row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="fw-700" style="font-size:1.6rem;" id="d-n-drugs">—</div>
+        <div class="text-muted" style="font-size:0.8rem;">Drugs in SynerGPCR</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="fw-700" style="font-size:1.6rem;" id="d-n-targets">—</div>
+        <div class="text-muted" style="font-size:0.8rem;">GPCR Targets</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Approved Drugs -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header sg-card-header">Associated Drugs for this Indication</div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Drug</th>
+                <th>Clinical Status</th>
+              </tr>
+            </thead>
+            <tbody id="d-drugs-tbody">
+              <tr><td colspan="2" class="text-muted text-center py-3">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: GPCR Targets -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header sg-card-header">Associated GPCR Targets</div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead>
+              <tr>
+                <th>UniProt AC</th>
+                <th>Gene</th>
+              </tr>
+            </thead>
+            <tbody id="d-targets-tbody">
+              <tr><td colspan="2" class="text-muted text-center py-3">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /disease-content -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  var DISEASE = decodeURIComponent("{{ disease_name | urlencode }}");
+
+  fetch('/api/disease/' + encodeURIComponent(DISEASE))
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(d) {
+      document.getElementById('disease-loading').style.display = 'none';
+      document.getElementById('disease-content').style.display = 'block';
+
+      document.getElementById('d-name').textContent = d.disease_name;
+      document.getElementById('d-category').textContent = d.category || '—';
+      document.getElementById('d-cui').textContent = d.umls_cui || '';
+      document.getElementById('d-n-drugs').textContent = d.n_drugs;
+      document.getElementById('d-n-targets').textContent = d.n_targets;
+
+      /* Drugs table */
+      var drugsTbody = document.getElementById('d-drugs-tbody');
+      if (d.drugs && d.drugs.length > 0) {
+        drugsTbody.innerHTML = d.drugs.map(function(dr) {
+          var badge = dr.clinical_status === 'Approved'
+            ? '<span class="badge bg-success" style="font-size:0.72rem;">Approved</span>'
+            : '<span class="badge bg-secondary" style="font-size:0.72rem;">' +
+              esc(dr.clinical_status || '—') + '</span>';
+          return '<tr>' +
+            '<td><a href="/compound/' + encodeURIComponent(dr.inchikey) +
+              '" class="fw-500 text-decoration-none">' + esc(dr.drug_name) + '</a>' +
+              (!dr.in_assay
+                ? ' <span class="badge bg-light text-secondary border ms-1" style="font-size:0.65rem;">No assay record</span>'
+                : '') +
+            '</td>' +
+            '<td>' + badge + '</td></tr>';
+        }).join('');
+      } else {
+        drugsTbody.innerHTML =
+          '<tr><td colspan="2" class="text-muted text-center">No drugs found.</td></tr>';
+      }
+
+      /* Targets table */
+      var targetsTbody = document.getElementById('d-targets-tbody');
+      if (d.targets && d.targets.length > 0) {
+        targetsTbody.innerHTML = d.targets.map(function(t) {
+          return '<tr>' +
+            '<td><code style="font-size:0.78rem;">' + esc(t.uniprot_ac) + '</code></td>' +
+            '<td><a href="/browse?target=' + encodeURIComponent(t.uniprot_ac) +
+              '" class="text-decoration-none">' + (esc(t.gene_name) || '—') + '</a></td>' +
+            '</tr>';
+        }).join('');
+      } else {
+        targetsTbody.innerHTML =
+          '<tr><td colspan="2" class="text-muted text-center">No targets found.</td></tr>';
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('disease-loading').innerHTML =
+        '<div class="text-danger">Failed to load disease data: ' + err.message + '</div>';
+    });
+
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
+</script>
+{% endblock %}

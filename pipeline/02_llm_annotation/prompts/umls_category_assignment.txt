@@ -1,0 +1,77 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : UMLS CUI / disease name -> 1 of 12 therapeutic-area categories
+Notebook           : 02_llm_annotation/umls_to_category.ipynb
+Input              : Output/DB/GPCRactDB/Raw_Disease_List.csv (5,381 rows;
+                     columns umls_cui | disease_name | source_hint)
+Output tables      : Output/DB/GPCRactDB/UMLS_CUI_to_Category_v2.csv (5,079 rows,
+                     input disease_name retained next to the assigned category)
+                     Output/DB/GPCRactDB/category_checkpoint.csv (2,203 rows)
+                     -> disease_category_lookup.csv (the 12 categories)
+
+Model              : gemini-2.5-flash-lite
+Temperature        : 0.0
+generation_config  : genai.GenerationConfig(temperature=0.0)
+Response format    : free-form JSON object {disease_name: category_number},
+                     markdown fences stripped by regex before json.loads
+Batching           : GEMINI_BATCH_SIZE = 30 disease names per call
+Checkpointing      : CHECKPOINT_EVERY = 10 batches; resumable
+Random seed        : none -> NOT deterministic even at temperature 0.0
+
+HYBRID DESIGN — READ THIS
+  The LLM is the SECOND stage. `rule_based_category()` (deterministic keyword
+  matching) runs first over all classifiable rows; the LLM is called only for the
+  remainder. Rows whose disease_name is in {NOT_FOUND, INVALID_FORMAT, Unknown,
+  Unknown disease} are excluded from classification entirely.
+
+  A separate, earlier LLM call in the same notebook resolves CUI -> disease name
+  for CUIs not covered by the source files (~15% of CUIs; ~85% come from
+  ChEMBL > DrugBank > IUPHAR > TTD file lookup, in that priority order).
+
+CATEGORY ENUM (12)
+  1 CNS / Psychiatric        2 Cardiovascular          3 Metabolic / Endocrine
+  4 Inflammatory / Immune    5 Respiratory             6 Oncology / Cancer
+  7 Renal / Urological       8 Gastrointestinal        9 Pain / Musculoskeletal
+ 10 Reproductive / Hormonal 11 Infectious Disease     12 Other / Unclassified
+
+VALIDATION
+  The returned category is cast to int; any value outside 1..12, and any
+  ValueError/TypeError on the cast, is coerced to 12 (Other / Unclassified).
+
+RETRY POLICY
+  None at this call site. A single try/except wraps each batch; there is no retry
+  loop and no backoff.
+
+FALLBACK ON FAILURE
+  On any exception the ENTIRE batch of up to 30 CUIs is assigned category 12
+  (Other / Unclassified): `return {cui: 12 for cui in name_to_cui.values()}`.
+  CONSEQUENCE: category 12 is a mixture of genuine "other/unclassified" diseases,
+  out-of-range model answers, and whole failed batches. Do not read the size of
+  category 12 as a biological result.
+
+================================================================================
+PROMPT (verbatim; sent as GEMINI_SYSTEM + "\n\nInput: " + JSON payload,
+        where payload = {"diseases": [<up to 30 disease names>]})
+================================================================================
+
+You are a pharmacology expert specializing in GPCR drug classification.
+Assign each disease name to exactly ONE of these 12 therapeutic categories:
+
+1: CNS / Psychiatric  (Schizophrenia, Depression, Alzheimer's, Parkinson's, Epilepsy, Migraine...)
+2: Cardiovascular  (Hypertension, Heart failure, Arrhythmia, Coronary artery disease...)
+3: Metabolic / Endocrine  (Type 2 diabetes, Obesity, Thyroid disorders, Hyperlipidemia...)
+4: Inflammatory / Immune  (Rheumatoid arthritis, Lupus, Atopic dermatitis, Crohn's disease...)
+5: Respiratory  (Asthma, COPD, Pulmonary fibrosis, Bronchitis...)
+6: Oncology / Cancer  (Lung cancer, Breast cancer, Colorectal cancer, Leukemia...)
+7: Renal / Urological  (Chronic kidney disease, Overactive bladder, Glomerulonephritis...)
+8: Gastrointestinal  (IBS, Gastroparesis, Ulcerative colitis, GERD, Hepatitis...)
+9: Pain / Musculoskeletal  (Chronic pain, Osteoarthritis, Fibromyalgia, Neuropathic pain...)
+10: Reproductive / Hormonal  (Endometriosis, Infertility, Preterm labor, Menopause...)
+11: Infectious Disease  (HIV/AIDS, COVID-19, Tuberculosis, Viral/bacterial infections...)
+12: Other / Unclassified  (Rare diseases, multi-system disorders, unclear conditions...)
+
+Rules:
+- Choose the PRIMARY therapeutic context most relevant to GPCR drug development.
+- Use 12 for rare/orphan diseases or genuinely ambiguous multi-system disorders.
+- Respond ONLY with JSON: {"disease_name": category_number}. No markdown, no text.

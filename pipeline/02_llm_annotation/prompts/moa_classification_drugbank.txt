@@ -1,0 +1,83 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : Clinical MoA classification (DrugBank)
+Notebook           : 02_llm_annotation/moa_drugbank.ipynb
+Input              : drug name, target UniProt, DrugBank ActionType (raw string),
+                     DrugBank MechanismOfAction free text (truncated to 1500 chars)
+Output table       : Output/DB/DrugBank/NAR/DrugBank_MoA_Labeled.csv (15,142 rows)
+                     retains ActionType (input) + MoA_Label + LLM_Confidence
+
+Model              : models/gemini-2.5-flash-lite
+Temperature        : 0.0
+response_mime_type : application/json
+Schema             : free-form JSON, validated in code:
+                       label      : str, one of the 7 labels below
+                       confidence : float in [0.0, 1.0]
+System instruction : passed via `system_instruction=SYSTEM_PROMPT` (below)
+Random seed        : none -> NOT deterministic even at temperature 0.0
+
+LABEL SET (7)
+  agonist | partial agonist | inverse agonist | antagonist | pam | nam | binder
+
+HYBRID DESIGN — READ THIS
+  The LLM is the SECOND stage. A deterministic rule table (`RULE_MAP`, ~40 exact
+  ActionType strings -> label) is applied first; the LLM is called only for
+  ActionType values the rule table does not cover. The notebook also runs
+  rule-only if no API key is present. LLM coverage is therefore a minority of rows.
+
+CONFIDENCE FLOOR
+  If the returned confidence < LLM_CONFIDENCE_THRESHOLD the label is overwritten
+  with "binder". Low-confidence calls are demoted, never dropped.
+
+RETRY POLICY
+  retries = 7. On HTTP 429 / ResourceExhausted: sleep `wait`, then wait =
+  min(wait * 2, 120), starting at 5 s (exponential backoff, capped at 120 s).
+  On any other exception: print and break.
+  A fixed LLM_BASE_DELAY sleep precedes every call.
+
+FALLBACK ON FAILURE
+  JSON parse error      -> {"label": "binder", "confidence": 0.0}
+  retries exhausted     -> {"label": "binder", ...}
+  Failures collapse to "binder", i.e. binding evidence without a direction. This
+  is conservative: it can never create a spurious agonist/antagonist call, but it
+  does inflate the "binder" class.
+
+================================================================================
+SYSTEM PROMPT (verbatim)
+================================================================================
+
+You are an expert pharmacologist specialized in GPCR drug classification.
+Classify the Mechanism of Action (MoA) of a drug acting on a specific target
+into exactly ONE of the following 7 labels:
+
+  1. agonist          - Full receptor activator (promotes active-state TM6/7 displacement)
+  2. partial agonist  - Activates receptor with submaximal efficacy vs full agonist
+  3. inverse agonist  - Suppresses constitutive/basal receptor activity below baseline
+  4. antagonist       - Blocks receptor without intrinsic efficacy (competitive or non-competitive)
+  5. pam              - Positive Allosteric Modulator: enhances orthosteric agonist response
+  6. nam              - Negative Allosteric Modulator: diminishes orthosteric agonist response
+  7. binder           - Binding evidence only; functional direction is truly unclear
+
+Classification rules (apply in order):
+  - If text describes both activation and inhibition on the SAME receptor -> dominant mechanism wins
+  - Do NOT confuse downstream pathway inhibition with receptor-level antagonism
+  - For enzyme targets (kinase, protease, etc.) -> treat inhibitor as antagonist
+  - 'Modulator' alone without directionality -> binder
+  - Absent or uninformative MoA text -> binder
+
+Return ONLY a valid JSON object:
+  {"label": "<one of the 7 labels>", "confidence": <0.0-1.0>}
+No extra text, no markdown fences.
+
+================================================================================
+USER PROMPT TEMPLATE (verbatim)
+================================================================================
+
+Drug name: {drug_name}
+Target (UniProt): {target_uniprot}
+DrugBank ActionType (semi-structured): {action_type_original}
+DrugBank MechanismOfAction text:
+"""{moa_text truncated to 1500 chars}"""
+
+Classify the MoA of this drug on this target.

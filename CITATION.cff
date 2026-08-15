@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: SynerGPCR
+authors:
+  - family-names: Son
+    given-names: Hyojin
+  - family-names: Lee
+    given-names: Sechan
+  - family-names: Yi
+    given-names: Gwan-Su
+url: "https://synergpcr.kaist.ac.kr"
+repository-code: "https://github.com/hyojin0912/SynerGPCR"
+date-released: 2026
+doi: ""  # filled after Zenodo deposition

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — Download{% endblock %}
+
+{% block content %}
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 1 — Page header + intro
+════════════════════════════════════════════════════════════════════ #}
+<h4 class="fw-700 mb-3" style="color:#1E293B;">Download</h4>
+
+<p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;max-width:820px;">
+  All SynerGPCR datasets are freely available under the
+  <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+     rel="noopener">Creative Commons Attribution 4.0 International
+  (CC BY 4.0)</a> licence. Please cite the SynerGPCR paper
+  (see below) when using these data.
+</p>
+
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 2 — Download table
+════════════════════════════════════════════════════════════════════ #}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header sg-card-header">Data Files</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:0.85rem;">
+        <thead>
+          <tr>
+            <th style="min-width:220px;">File</th>
+            <th>Description</th>
+            <th style="white-space:nowrap;">Records</th>
+            <th>Format</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {# Row 1 — compound_lookup #}
+          <tr>
+            <td><code style="font-size:0.78rem;">compound_lookup.csv</code></td>
+            <td>Compound metadata — InChIKey, preferred name,
+              SMILES, clinical phase, and approval status for all
+              <span id="dl-n-compounds">277,544</span> assay-active
+              compounds in SynerGPCR.</td>
+            <td><span id="dl-n-compounds-count">—</span></td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/compound_lookup.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+          {# Row 1b — target_lookup #}
+          <tr>
+            <td><code style="font-size:0.78rem;">target_lookup.csv</code></td>
+            <td>GPCR target metadata — UniProt accession, gene
+              symbol, protein name, GPCR class, family, organism,
+              ChEMBL target ID, assay pair count, and GPCRact
+              prediction availability for all 600 GPCR targets
+              (human and non-human orthologues) with assay data
+              in SynerGPCR.</td>
+            <td>600 targets</td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/target_lookup.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+          {# Row 2 — compound_chain_summary #}
+          <tr>
+            <td><code style="font-size:0.78rem;">compound_chain_summary.csv</code></td>
+            <td>Pair-level assay chain records. For each
+              compound–GPCR pair, records the experimental activity
+              state at each assay layer (L1–L4) and the resulting
+              chain pattern with Bliss SI.</td>
+            <td>396,169 pairs</td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/compound_chain_summary.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+          {# Row 3 — gpcract_predictions #}
+          <tr>
+            <td><code style="font-size:0.78rem;">gpcract_predictions.csv</code></td>
+            <td>GPCRact AI predictions (L2 — G-Protein
+              Coupling and L3 — β-Arrestin Recruitment). High-confidence
+              retained predictions only.
+              <span class="sg-ai-tag">[AI-predicted, not experimentally
+              validated]</span></td>
+            <td>104,641 retained predictions</td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/gpcract_predictions.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+          {# Row 4 — candidate_shortlist #}
+          <tr>
+            <td><code style="font-size:0.78rem;">candidate_shortlist.csv</code></td>
+            <td>AI-augmented synergy candidates — compounds with
+              confirmed L1 (Receptor Binding) and L4 (Reporter Gene
+              Activity) data whose intermediate signalling layer(s) were
+              filled by GPCRact at high confidence.</td>
+            <td><span id="dl-n-candidates">—</span></td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/candidate_shortlist.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+          {# Row 6 — synergy_stats #}
+          <tr>
+            <td><code style="font-size:0.78rem;">synergy_stats.csv</code></td>
+            <td>Bliss synergy index (SI), approval rates, and
+              Wilson confidence intervals for all 15 assay chain
+              combination patterns.</td>
+            <td>15 patterns</td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/synergy_stats.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+          {# Row 7 — single_layer_table #}
+          <tr>
+            <td><code style="font-size:0.78rem;">single_layer_table.csv</code></td>
+            <td>Single-layer clinical approval rates
+              (L1–L4 individually). Reference baseline for the
+              synergy analysis.</td>
+            <td>4 layers</td>
+            <td><span class="badge bg-light text-dark border"
+                      style="font-size:0.75rem;font-family:monospace;">CSV</span></td>
+            <td><a href="/download/file/single_layer_table.csv"
+                   class="btn btn-sm btn-outline-primary">↓ Download</a></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+{# ════════════════════════════════════════════════════════════════════
+   SECTION 3 — Usage notes
+════════════════════════════════════════════════════════════════════ #}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header sg-card-header">Usage Notes</div>
+  <div class="card-body">
+    <dl class="row mb-0" style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;">
+
+      <dt class="col-sm-3">Citation</dt>
+      <dd class="col-sm-9">
+        If these data are used in published research, please cite:<br>
+        Son H and Yi G-S. SynerGPCR: an AI-augmented GPCR assay
+        chain database for synergistic clinical translatability.
+        Manuscript in preparation.
+        A citable DOI will be added upon publication.
+      </dd>
+
+      <dt class="col-sm-3">AI Predictions</dt>
+      <dd class="col-sm-9">
+        GPCRact predictions in these files are computationally
+        generated and have not been independently confirmed in
+        the laboratory — see the
+        <a href="/ai-prediction">AI Prediction</a> tab for
+        full methodology and performance metrics. When using
+        <code style="font-size:0.78rem;">gpcract_predictions.csv</code>,
+        note the confidence thresholds applied
+        (L2 — G-Protein Coupling: t ≥ 0.40;
+         L3 — β-Arrestin Recruitment: t ≥ 0.97)
+        and cite the GPCRact paper:<br>
+        Son H and Yi G-S (2026). GPCRact: a hierarchical framework
+        for predicting ligand-induced GPCR activity via allosteric
+        communication modelling.
+        <em>Briefings in Bioinformatics</em>, 27(1), bbaf719.
+        <a href="https://doi.org/10.1093/bib/bbaf719"
+           target="_blank" rel="noopener">
+          https://doi.org/10.1093/bib/bbaf719</a>
+      </dd>
+
+      <dt class="col-sm-3">Data Sources</dt>
+      <dd class="col-sm-9 mb-0">
+        SynerGPCR integrates data from 10 public repositories.
+        Please refer to the original sources when re-distributing
+        raw assay data.
+        <ul class="mt-2 mb-0" style="padding-left:1.2rem;">
+          <li>
+            <a href="https://www.ebi.ac.uk/chembl/"
+               target="_blank" rel="noopener">ChEMBL</a>
+            — large-scale bioactivity database (EMBL-EBI)
+          </li>
+          <li>
+            <a href="https://www.bindingdb.org/"
+               target="_blank" rel="noopener">BindingDB</a>
+            — protein–small molecule binding affinities
+          </li>
+          <li>
+            <a href="https://pubchem.ncbi.nlm.nih.gov/bioassay/"
+               target="_blank" rel="noopener">PubChem BioAssay</a>
+            — high-throughput screening data (NCBI)
+          </li>
+          <li>
+            <a href="https://www.guidetopharmacology.org/"
+               target="_blank" rel="noopener">IUPHAR/BPS Guide to
+            PHARMACOLOGY</a>
+            — curated receptor–ligand pharmacology
+          </li>
+          <li>
+            <a href="https://go.drugbank.com/"
+               target="_blank" rel="noopener">DrugBank</a>
+            — approved drug and target information
+          </li>
+          <li>
+            <a href="https://drugcentral.org/"
+               target="_blank" rel="noopener">DrugCentral</a>
+            — drug indications and pharmacological actions
+          </li>
+          <li>
+            <a href="https://www.dgidb.org/"
+               target="_blank" rel="noopener">DGIdb</a>
+            — drug–gene interaction database
+          </li>
+          <li>
+            <a href="https://db.idrblab.net/ttd/"
+               target="_blank" rel="noopener">TTD</a>
+            — Therapeutic Target Database
+          </li>
+          <li>
+            <a href="http://zhanggroup.org/GLASS/"
+               target="_blank" rel="noopener">GLASS</a>
+            — GPCR–ligand association database
+          </li>
+          <li>
+            <a href="https://gpcrdb.org/"
+               target="_blank" rel="noopener">GPCRdb</a>
+            — GPCR structure, function, and pharmacology
+          </li>
+        </ul>
+      </dd>
+
+    </dl>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+(function() {
+  'use strict';
+  fetch('/api/stats')
+    .then(function(r) { return r.json(); })
+    .then(function(st) {
+      var map = {
+        'dl-n-compounds':       st.n_assay_compounds,
+        'dl-n-compounds-count': st.n_assay_compounds,
+        'dl-n-candidates':      st.n_candidates,
+
+      };
+      Object.keys(map).forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && map[id] != null)
+          el.textContent = Number(map[id]).toLocaleString();
+      });
+    });
+})();
+</script>
+{% endblock %}

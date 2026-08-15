@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% block title %}SynerGPCR — About{% endblock %}
+
+{% block head %}
+<style>
+  .about-stat-label { font-size: 0.82rem; color: #475569; }
+  .about-stat-val   { font-weight: 700; font-size: 1rem; }
+  .about-layer-table th { font-size: 0.82rem; background: #f1f5f9; }
+  .about-layer-table td { font-size: 0.84rem; vertical-align: top; }
+  .about-source-table th { font-size: 0.82rem; background: #f1f5f9; }
+  .about-source-table td { font-size: 0.84rem; }
+  .about-si-box { background: #f8fafc; border-left: 4px solid var(--bs-primary);
+                   padding: 1rem 1.25rem; border-radius: 4px; font-size: 0.86rem; }
+  .about-si-box code { font-size: 0.82rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+
+{# ════════════════════════════════════════════════════════════════════
+   LEFT COLUMN
+════════════════════════════════════════════════════════════════════ #}
+<div class="col-lg-8">
+
+{# ── SECTION 1 — Overview ── #}
+<section id="overview">
+  <h2 class="fw-700 mb-3" style="color:#1E293B;">About SynerGPCR</h2>
+
+  <p class="lead" style="font-size:0.95rem;color:var(--sg-mid);line-height:1.75;">
+    SynerGPCR is an AI-augmented GPCR assay-chain database
+    linking multi-layer functional evidence to clinical
+    translatability. It integrates 1,753,921 assay records
+    from 10 public sources into a mechanistically ordered
+    chain of four assay types, covering
+    <strong><span id="about-n-cpd">—</span></strong> compounds across
+    <strong><span id="about-n-targets">—</span></strong> GPCR targets and
+    <strong><span id="about-n-approved">—</span></strong> approved drugs.
+  </p>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    Assay-chain depth is synergistically predictive of
+    clinical approval. Any single assay layer alone
+    corresponds to clinical approval rates below 1%,
+    whereas compounds confirmed active across all four
+    experimental layers achieve 16.2% — a Bliss Synergy
+    Index of 13.45 relative to the expectation under
+    layer independence. Yet only 228 compounds are fully
+    characterised experimentally; GPCRact AI predictions
+    supply missing L2 or L3 states for
+    <strong><span id="about-n-candidates">—</span></strong>
+    AI-augmented synergy candidates.
+  </p>
+</section>
+
+<hr class="my-4">
+
+{# ── SECTION 2 — Data Construction ── #}
+<section id="data-sources">
+  <h4 class="fw-700 mb-3" style="color:#1E293B;">Data Construction</h4>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    SynerGPCR integrates 1,753,921 assay records from ten
+    public repositories, yielding 396,169 unique
+    compound–GPCR pair-level chain records.
+  </p>
+
+  <div class="table-responsive mb-3">
+    <table class="table table-sm table-bordered about-source-table mb-0">
+      <thead>
+        <tr><th>Source</th><th>Type</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ChEMBL v36</td><td>Bioactivity (SQL extraction)</td></tr>
+        <tr><td>BindingDB v2026-03</td><td>Binding affinity</td></tr>
+        <tr><td>PubChem BioAssay</td><td>HTS functional assays</td></tr>
+        <tr><td>IUPHAR/BPS GtP</td><td>Curated pharmacology</td></tr>
+        <tr><td>DrugBank v5.1.15</td><td>Approved drug MoA &amp; indication</td></tr>
+        <tr><td>DrugCentral v23-11</td><td>Clinical approval &amp; indication</td></tr>
+        <tr><td>DGIdb v5.0.7</td><td>Drug–gene interactions</td></tr>
+        <tr><td>TTD v24-01</td><td>Therapeutic targets &amp; indication</td></tr>
+        <tr><td>GLASS v2.0</td><td>GPCR–ligand associations</td></tr>
+        <tr><td>GPCRdb v24-07</td><td>GPCR structural pharmacology</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    Mode-of-action (MoA) labels were assigned through a
+    hierarchical pipeline. For structured sources
+    (DrugBank, DrugCentral, GPCRdb), labels were mapped to
+    a six-class schema (agonist, antagonist, partial agonist,
+    inverse agonist, positive allosteric modulator, negative
+    allosteric modulator). For unstructured bioassay
+    descriptions (PubChem BioAssay, ChEMBL, BindingDB),
+    Gemini 2.5 Flash was used with structured JSON output to
+    parse assay type, MoA direction, and biological context.
+    Conflicting annotations across sources were resolved by
+    a biological-hierarchy priority scheme; 425 direct
+    agonist–antagonist conflicts were resolved by manual
+    review. The resulting 1,753,921 records span four
+    mechanistically distinct assay layers.
+  </p>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    Clinical approval status was cross-referenced across
+    five indication databases (DrugBank, DrugCentral, TTD,
+    IUPHAR, ChEMBL) and normalised to UMLS CUI as the
+    master disease identifier, yielding 53,562 unique
+    drug–disease pairs across 12 therapeutic area
+    categories.
+  </p>
+</section>
+
+<hr class="my-4">
+
+{# ── SECTION 3 — Assay Chain Model ── #}
+<section id="bliss-si">
+  <h4 class="fw-700 mb-3" style="color:#1E293B;">Assay Chain Model and the Bliss Synergy Index</h4>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    Each compound–GPCR pair is represented as an ordered
+    chain of up to four assay layers, corresponding to
+    successive stages of GPCR signal transduction:
+    L1 (Receptor Binding) → L2 (G-Protein Coupling) →
+    L3 (β-Arrestin Recruitment) → L4 (Reporter Gene Activity).
+  </p>
+
+  <div class="table-responsive mb-3">
+    <table class="table table-sm table-bordered about-layer-table mb-0">
+      <thead>
+        <tr>
+          <th style="width:60px;">Layer</th>
+          <th style="width:170px;">Full Name</th>
+          <th>Assay Types</th>
+          <th>Biological Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fw-600">L1</td>
+          <td>Receptor Binding</td>
+          <td>Radioligand displacement (e.g. [³H] or [¹²⁵I]) and competition binding assays</td>
+          <td>Confirms ligand–receptor contact. Detects binders
+            regardless of downstream pharmacological activity.</td>
+        </tr>
+        <tr>
+          <td class="fw-600">L2</td>
+          <td>G-Protein Coupling</td>
+          <td>cAMP accumulation, Ca²⁺ mobilisation, IP1
+            accumulation, GTPγS binding</td>
+          <td>Measures second-messenger signalling immediately downstream of receptor activation, reflecting functional efficacy at the G-protein interface. The most widely available functional layer in public repositories.</td>
+        </tr>
+        <tr>
+          <td class="fw-600">L3</td>
+          <td>β-Arrestin Recruitment</td>
+          <td>BRET- or HTRF-based β-arrestin recruitment</td>
+          <td>Captures the G-protein-independent signalling arm. Partially sequential to, and partially competitive with, G-protein activation — making it a marker of biased agonism rather than a standalone measure of functional activity.</td>
+        </tr>
+        <tr>
+          <td class="fw-600">L4</td>
+          <td>Reporter Gene Activity</td>
+          <td>Transcription factor–driven reporter gene expression</td>
+          <td>Integrates the full signal-transduction cascade to the transcriptional output level. Because the reporter readout depends on sustained upstream signalling, L4 provides the highest specificity for functional agonism across the complete pathway.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h5 class="fw-600 mt-4 mb-3" style="color:#1E293B;">Bliss Synergy Index (SI)</h5>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    The clinical translatability of each chain pattern is
+    quantified by the Bliss Synergy Index (SI), which
+    measures how much the observed clinical approval rate
+    exceeds the rate expected if the layers contributed
+    independently:
+  </p>
+
+  <p style="font-size:0.9rem;color:#1E293B;text-align:center;font-weight:600;">
+    SI = observed approval rate / E<sub>Bliss</sub>
+  </p>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    where E<sub>Bliss</sub> = 1 − Π(1 − P<sub>Li</sub>),
+    with P<sub>Li</sub> being the single-layer approval rate
+    of each layer <em>i</em> included in the pattern. SI &gt; 1
+    indicates that co-occurrence of assay activity across
+    multiple layers is synergistically enriched relative to
+    statistical independence.
+  </p>
+
+  <div class="about-si-box mb-3" id="si-example">
+    <strong>Worked example: L1 + L2 + L4 pattern</strong><br>
+    <code>P(L1 only) = 109 / 65,755 = 0.17%</code><br>
+    <code>P(L2 only) = 77 / 36,546 = 0.21%</code><br>
+    <code>P(L4 only) = 169 / 59,592 = 0.28%</code><br>
+    <code>E<sub>Bliss</sub> = 1 − (1 − 0.0017)(1 − 0.0021)(1 − 0.0028) = 0.66%</code><br>
+    <code>Observed rate (n = 2,580 compounds): 6.40%</code><br>
+    <code><strong>SI = 6.40% / 0.66% = 9.71</strong></code>
+  </div>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    The Full_chain SI (13.45) is shown as a reference
+    benchmark but should be interpreted with caution:
+    L2 and L3 are not statistically independent
+    (Fisher OR = 9.24, p ≈ 0), which violates the Bliss
+    independence assumption. Primary quantitative claims
+    use single-AI-layer panels (L1+L2+L4 and L1+L3+L4)
+    where the two assay layers in each panel are
+    biologically independent.
+  </p>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.7;">
+    L2 (G-Protein Coupling) provides the broadest functional
+    coverage across the compound set. L4 (Reporter Gene Activity)
+    provides the highest specificity, as it integrates the full
+    upstream cascade to the transcriptional output. L3
+    (β-Arrestin Recruitment) is treated as a distinct supplementary
+    layer, reflecting its role as a biased agonism marker rather
+    than a primary activity readout.
+  </p>
+</section>
+
+<hr class="my-4">
+
+{# ── SECTION 5 — AI Integration ── #}
+<section id="ai-integration">
+  <h4 class="fw-700 mb-3" style="color:#1E293B;">AI-Based Chain Completion (GPCRact)</h4>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    The majority of binding-confirmed compounds lack
+    downstream functional data: 78.5% of approved drugs
+    have no G-protein coupling record and 96.2% lack
+    β-arrestin data, making chain-based translatability
+    assessment impossible from experimental data alone.
+    To close these gaps, SynerGPCR integrates GPCRact,
+    a structure-based E(n)-equivariant graph neural network
+    (EGNN) that predicts L2 (G-Protein Coupling) and
+    L3 (β-Arrestin Recruitment) activities de novo from
+    3D atomic structural graphs of the GPCR binding site
+    and ligand.
+  </p>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    GPCRact achieves balanced accuracies of 0.875 (L2,
+    n = 395 approved drugs) and 0.834 (L3, n = 83 approved
+    drugs) on held-out clinical test sets. When incomplete
+    experimental chains are filled with high-confidence
+    GPCRact predictions, the reconstructed profiles recover
+    approximately 79% of the synergy measured on the fully
+    experimental benchmark at both signalling layers.
+  </p>
+
+  <p style="font-size:0.88rem;color:var(--sg-mid);line-height:1.75;">
+    For full methodology,
+    performance metrics, and candidate lists, see the
+    <a href="/ai-prediction">AI Prediction</a> tab.
+  </p>
+</section>
+
+</div>{# /col-lg-8 #}
+
+
+{# ════════════════════════════════════════════════════════════════════
+   RIGHT COLUMN
+════════════════════════════════════════════════════════════════════ #}
+<div class="col-lg-4">
+
+{# ── SECTION 6 — Database Statistics ── #}
+<section id="statistics">
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header sg-card-header">Database Statistics</div>
+    <ul class="list-group list-group-flush" style="font-size:0.86rem;">
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">Assay-bearing compounds</span>
+        <span class="about-stat-val" id="stat-n-cpd">—</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">GPCR targets</span>
+        <span class="about-stat-val" id="stat-n-targets">—</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">Approved drugs</span>
+        <span class="about-stat-val" id="stat-n-approved">—</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">Compound–GPCR pair records</span>
+        <span class="about-stat-val">396,169</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">Assay records (raw)</span>
+        <span class="about-stat-val">1,753,921</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span class="about-stat-label">AI-augmented synergy candidates
+          <span class="sg-ai-tag sg-ai-tag--warning" style="font-size:0.7rem;vertical-align:middle;">[AI]</span>
+        </span>
+        <span class="about-stat-val" id="stat-n-candidates">—</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span class="about-stat-label">Cross-family repurposing candidates
+          <span class="sg-ai-tag sg-ai-tag--warning" style="font-size:0.7rem;vertical-align:middle;">[AI]</span>
+        </span>
+        <span class="about-stat-val" id="stat-n-repurposing">—</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">Targets with co-active approval data</span>
+        <span class="about-stat-val" id="stat-n-enriched">—</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between">
+        <span class="about-stat-label">Therapeutic areas</span>
+        <span class="about-stat-val" id="stat-n-disease">—</span>
+      </li>
+    </ul>
+    <div class="card-body" style="font-size:0.8rem;color:#64748B;line-height:1.6;">
+      The compound dictionary holds 481,240 entries
+      (including indication-only compounds without assays);
+      chain and synergy analyses use the 277,544 that carry
+      at least one assay record. Approved-drug count is
+      database-wide (2,420); <span id="stat-n-approved-assay">—</span> have assay data.
+    </div>
+  </div>
+</section>
+
+{# ── SECTION 7a — Comparison ── #}
+<section id="comparison">
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header sg-card-header">Comparison with Existing Resources</div>
+    <div class="card-body" style="font-size:0.86rem;color:var(--sg-mid);line-height:1.7;">
+      SynerGPCR complements, rather than replaces, existing
+      GPCR resources.
+      <a href="https://gpcrdb.org/" target="_blank"
+         rel="noopener">GPCRdb</a> provides receptor structure,
+      generic residue numbering, and curated pharmacology;
+      SynerGPCR provides compound-level multi-layer
+      functional evidence aligned to clinical outcomes.
+      <a href="https://www.ebi.ac.uk/chembl/" target="_blank"
+         rel="noopener">ChEMBL</a> and
+      <a href="https://www.bindingdb.org/" target="_blank"
+         rel="noopener">BindingDB</a> supply raw bioactivity data;
+      SynerGPCR organises these into mechanistically ordered
+      chains and quantifies their clinical translatability.
+    </div>
+  </div>
+</section>
+
+{# ── SECTION 7b — Contact ── #}
+<section id="contact">
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-header sg-card-header">Contact</div>
+    <div class="card-body" style="font-size:0.86rem;color:var(--sg-mid);line-height:1.7;">
+      <strong>Synergistic Bioinformatics Lab</strong><br>
+      Department of Bio and Brain Engineering<br>
+      Korea Advanced Institute of Science and Technology (KAIST)<br>
+      291 Daehak-ro, Yuseong-gu, Daejeon 34141, Republic of Korea<br><br>
+      <p class="mb-1">
+        <strong>Prof. Gwan-Su Yi</strong>
+        (Principal Investigator)<br>
+        <a href="mailto:gwansuyi@gmail.com"
+           style="font-size:0.85rem;">gwansuyi@gmail.com</a>
+      </p>
+      <p class="mb-0">
+        <strong>Hyojin Son</strong>
+        (Ph.D. Candidate)<br>
+        <a href="mailto:sonhyojin0912@gmail.com"
+           style="font-size:0.85rem;">sonhyojin0912@gmail.com</a>
+      </p>
+      <hr class="my-2">
+      Web: <a href="http://synbi.kaist.ac.kr" target="_blank"
+              rel="noopener">http://synbi.kaist.ac.kr</a>
+    </div>
+  </div>
+</section>
+
+</div>{# /col-lg-4 #}
+
+</div>{# /row #}
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+(function() {
+  'use strict';
+
+  fetch('/api/stats')
+    .then(function(r) { return r.json(); })
+    .then(function(st) {
+      function set(id, val) {
+        var el = document.getElementById(id);
+        if (el && val != null) el.textContent = Number(val).toLocaleString();
+      }
+
+      /* Section 1 inline spans */
+      set('about-n-cpd',        st.n_assay_compounds);
+      set('about-n-targets',    st.n_targets);
+      set('about-n-approved',   st.n_approved_db);
+      set('about-n-candidates', st.n_candidates);
+
+      /* Section 6 sidebar stats */
+      set('stat-n-cpd',            st.n_assay_compounds);
+      set('stat-n-targets',        st.n_targets);
+      set('stat-n-approved',       st.n_approved_db);
+      set('stat-n-candidates',     st.n_candidates);
+      set('stat-n-repurposing',    st.n_repurposing_web);
+      set('stat-n-enriched',       st.n_enriched_targets);
+      set('stat-n-disease',        st.n_disease_cats);
+      set('stat-n-approved-assay', st.n_approved_assay);
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,69 @@
+================================================================================
+LLM CALL SPECIFICATION
+================================================================================
+Stage              : MoA classification from assay parameters (GLASS v2.0)
+Notebook           : 02_llm_annotation/moa_glass.ipynb
+Input              : GLASS `standard_type`, `classification`, `action_type`
+                     (structured columns, not free text)
+Output table       : Output/DB/GLASS/NAR/GLASS_v2_MoA_Labeled.csv (954,500 rows)
+                     retains action_type (input) alongside MoA_Label + Label_Source
+
+Model              : models/gemini-2.5-flash-lite
+Temperature        : 0.0
+response_mime_type : application/json
+Schema declaration : typing_extensions.TypedDict `MoAExtraction`
+                       moa_label : str
+Random seed        : none -> NOT deterministic even at temperature 0.0
+Rate control       : time.sleep(1) before every call
+
+OUTPUT PARSING — NOT strict JSON
+  Same ordered-substring matcher as the IUPHAR stage:
+      ["inverse agonist", "partial agonist", "agonist", "antagonist",
+       "pam", "nam", "binder"]
+  First hit wins; longer labels are tested first.
+
+LABEL SET (7)
+  agonist | antagonist | partial agonist | inverse agonist | pam | nam | binder
+
+DESIGN NOTE — DELIBERATE CONSERVATISM
+  GLASS records are largely potency measurements (EC50/IC50) with weak directional
+  annotation. The prompt therefore hard-codes a default-to-"binder" rule so that
+  activity alone is never promoted to agonism. This is why the GLASS contribution
+  to the integrated table is dominated by the Binder class.
+
+RETRY POLICY
+  retries = 7. On HTTP 429 / ResourceExhausted: sleep `wait`, then wait *= 2,
+  starting at 5 s (exponential backoff, uncapped).
+  On any other exception: print and break.
+
+FALLBACK ON FAILURE
+  "binder" — on unmatched response text and on retry exhaustion.
+
+================================================================================
+PROMPT (verbatim; {standard_type}, {classification}, {action_type} substituted)
+================================================================================
+
+    You are an expert pharmacologist mapping GPCR ligand data.
+    Determine the final Mechanism of Action (MoA) based strictly on the provided assay parameters from the GLASS database.
+
+    CRITICAL RULES:
+    1. "EC50" and "active" do NOT automatically mean "agonist". They only indicate activity in a functional assay.
+    2. If the 'Action Type' is ambiguous (e.g., "MODULATION", "OTHER") and doesn't clearly state activation or inhibition, you MUST output "binder".
+    3. Only output "agonist" or "pam" if the Action Type clearly implies positive efficacy (e.g., UPREGULATION).
+    4. Only output "antagonist" or "nam" if the Action Type implies negative/blocking efficacy (e.g., DOWNREGULATION).
+    5. Do not over-interpret. When in doubt, ALWAYS default to "binder".
+
+    Classify into exactly one of the following labels:
+    - "agonist"
+    - "antagonist"
+    - "partial agonist"
+    - "inverse agonist"
+    - "pam"
+    - "nam"
+    - "binder"
+
+    Return ONLY the matching label in lowercase. Do not use quotes, code blocks, or extra text.
+
+    Standard Type: "{standard_type}"
+    Classification: "{classification}"
+    Action Type: "{action_type}"
