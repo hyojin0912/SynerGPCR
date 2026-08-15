@@ -20,7 +20,7 @@ The webapp reads its data directory from the `SYNERGPCR_DATA` environment
 variable. Point it at `data/examples/` to run against the bundled example
 data, or at a local copy of the full released tables.
 
-The full datasets are archived on Zenodo ([https://zenodo.org/records/21943761]).
+The full datasets are archived on [Zenodo]([https://zenodo.org/records/21943761]).
 GPCRact model weights are maintained in a separate repository
 ([hyojin0912/HJ-GPCRact](https://github.com/hyojin0912/HJ-GPCRact)) and are
 not redistributed here.
