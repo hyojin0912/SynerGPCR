@@ -1,0 +1,17 @@
+{
+  "title": "SynerGPCR: source code for the GPCR assay-chain database and analyses",
+  "upload_type": "software",
+  "description": "<p>Source code for building SynerGPCR, a GPCR assay-chain database linking functional assay-chain completeness to clinical translatability (https://synergpcr.kaist.ac.kr), and for regenerating the reported analyses from the archived data tables (doi:10.5281/zenodo.21943761).</p><p>Licences: code MIT; data CC BY-NC-SA 4.0 (see LICENSE-DATA and the Zenodo data record).</p>",
+  "creators": [
+    {"name": "Son, Hyojin", "affiliation": "Korea Advanced Institute of Science and Technology (KAIST)"},
+    {"name": "Lee, Sechan", "affiliation": "Korea Advanced Institute of Science and Technology (KAIST)"},
+    {"name": "Yi, Gwan-Su", "affiliation": "Korea Advanced Institute of Science and Technology (KAIST)"}
+  ],
+  "license": "MIT",
+  "keywords": ["GPCR", "bioactivity database", "assay chain", "clinical translatability", "cheminformatics"],
+  "related_identifiers": [
+    {"identifier": "10.5281/zenodo.21943761", "relation": "isSupplementedBy", "scheme": "doi", "resource_type": "dataset"},
+    {"identifier": "https://synergpcr.kaist.ac.kr", "relation": "isSupplementTo", "scheme": "url"},
+    {"identifier": "https://github.com/hyojin0912/HJ-GPCRact", "relation": "references", "scheme": "url", "resource_type": "software"}
+  ]
+}

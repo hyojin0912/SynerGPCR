@@ -1,4 +1,5 @@
 cff-version: 1.2.0
+message: "If you use SynerGPCR, please cite it as below."
 title: SynerGPCR
 authors:
   - family-names: Son
@@ -9,5 +10,6 @@ authors:
     given-names: Gwan-Su
 url: "https://synergpcr.kaist.ac.kr"
 repository-code: "https://github.com/hyojin0912/SynerGPCR"
-date-released: 2026
-doi: "10.5281/zenodo.21943761"  # filled after Zenodo deposition
+date-released: "2026-08-15"
+doi: "10.5281/zenodo.21943761"
+license: MIT
