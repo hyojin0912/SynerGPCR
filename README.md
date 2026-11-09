@@ -4,9 +4,6 @@ SynerGPCR integrates GPCR in vitro functional assay data from ten public sources
 
 <img width="1023" height="906" alt="figure1" src="https://github.com/user-attachments/assets/4389bd5f-018a-49e3-80c6-74a365ebb1cf" />
 
-
-<img width="2103" height="1902" alt="Figure1" src="https://github.com/user-attachments/assets/baeab1c3-4bba-4485-8967-58b5bda81263" />
-
 *Ten public sources are harmonised to common compound and GPCR identifiers, linking 1,753,921 assay records to clinical status for 2,420 approved drugs. 
 Every compound–GPCR pair is scored active, inactive or untested at four assay layers ordered along the signalling cascade, and active layers are combined across targets into a compound-level chain pattern. GPCRact completes chains missing L2 or L3 data; four entry points serve the resulting profiles.*
 
