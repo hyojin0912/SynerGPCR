@@ -2,6 +2,9 @@
 
 SynerGPCR integrates GPCR in vitro functional assay data from ten public sources into per-compound, four-layer assay-chain profiles (receptor binding → G-protein coupling → β-arrestin recruitment → reporter gene activity), linked to clinical approval outcomes and completed by GPCRact predictions where experimental data is missing. The live app is available at: https://synergpcr.kaist.ac.kr
 
+<img width="1023" height="906" alt="figure1" src="https://github.com/user-attachments/assets/4389bd5f-018a-49e3-80c6-74a365ebb1cf" />
+
+
 <img width="2103" height="1902" alt="Figure1" src="https://github.com/user-attachments/assets/baeab1c3-4bba-4485-8967-58b5bda81263" />
 
 *Ten public sources are harmonised to common compound and GPCR identifiers, linking 1,753,921 assay records to clinical status for 2,420 approved drugs. 
